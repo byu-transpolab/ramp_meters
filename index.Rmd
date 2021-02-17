@@ -1,5 +1,5 @@
 ---
-title: "Article Long Title"
+title: "Evaluating Ramp Meter Delay in Utah"
 author:
   - name: Gregory Macfarlane
     email: gregmacfarlane@byu.edu
@@ -28,7 +28,7 @@ biblio-style: apalike
 link-citations: yes
 abstract: |
   This is where the abstract should go.
-description: "A short description"
+description: "Ramp meter delay in Utah"
 ---
 
 # Introduction {#intro}

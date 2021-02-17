@@ -1,10 +1,101 @@
 # Methods
+```{r setup}
+library(tidyverse)
+library(readxl)
+```
 
 We describe our methods in this chapter.
 
+
+```{r kalman_function}
+#' Function to compute estimated queue length via a Kalman filter
+#'
+#' @param v_in vector of vehicles entering queue in time 
+#' @param v_out vector of vehicles entering queue in time 
+#' @param K Coefficient of 
+#' @param C Coefficient of
+#' @param period_length in minutes
+#' @param ramp_length Length of the ramp in feet
+#' @param n_lanes Number of lanes on ramp.
+#' @param veh_length Average assumed vehicle length with safety buffer
+#' 
+kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = 1.0, period_length = 1,
+                          ramp_length, n_lanes = 2, veh_length = 24){
+  
+  queue <- rep(0, length(v_in))
+  
+  # estimate of queue based on density
+  qhat <- occupancy * ramp_length * n_lanes / veh_length
+  
+  # kalman filter equation for queue
+  queue <- lag(queue) + period_length * (C * v_in - v_out) + K * (qhat - lag(queue))
+  
+  # queue must be non-negative
+  ifelse(queue < 0, 0, queue)
+}
+```
+
+
 ## Data
+Read in the data. 
 
 ```{r load_data}
+layton <- read_excel("data/layton_counts.xlsx")
+# read data from other places later.
 
+
+detector <- layton %>%
+  select(Start_time, Queue_size, contains("Manual"),
+         contains("Auto"), EQ_1_Occ, EQ_2_Occ)  %>%
+  mutate(
+    v_in = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3,
+    v_out = Auto_Pass_1 + Auto_Pass_2,
+    occupancy = (EQ_1_Occ + EQ_2_Occ)/ 2
+  )
+  
+```
+
+
+This stuff might actually belong in the results / application page. But it's
+here for now.
+
+```{r kalman_apply}
+# calculate kalman filter
+estimated_queues <- detector %>%
+  mutate(
+    day = lubridate::wday(Start_time)
+  ) %>%
+  group_by(day) %>%
+  mutate(
+    kalman = kalman_filter(v_in, v_out, occupancy, ramp_length = 537)
+    # here is where your other conservation goes? 
+  ) %>%
+  select(Start_time, Queue_size, kalman)
+```
+
+
+```{r rmse_function}
+# function to compute root mean squared error between two vectors (strangely
+# not in R by default)
+rmse <- function(x, y){
+  sqrt(mean(( x - y )^2, na.rm = TRUE))
+}
+```
+
+
+```{r kalman_optim}
+# Objective function: 
+# a function that will return the RMSE between our observed and 
+# and kalman-calculated queues for different values of C and K
+rmse_kalman <- function(p, observed_queue, v_in, v_out, occupancy){
+  queue <- kalman_filter(v_in, v_out, occupancy, K = p[1], C = p[2], ramp_length = 537)
+  # compute moving average: might want to do this ahead of time?
+  MAQueue <- (lag(queue) + queue + lead(queue))/3
+  rmse(observed_queue, MAQueue)
+}
+
+# Optimize:
+# Find the values of C and K that will minimize the objective function
+optim(c(0.22, 1), rmse_kalman, observed_queue, v_in, v_out, occupancy)
 ```
 

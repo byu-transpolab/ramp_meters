@@ -87,8 +87,9 @@ rmse <- function(x, y){
 # Objective function: 
 # a function that will return the RMSE between our observed and 
 # and kalman-calculated queues for different values of C and K
-rmse_kalman <- function(p, observed_queue, v_in, v_out, occupancy){
-  queue <- kalman_filter(v_in, v_out, occupancy, K = p[1], C = p[2], ramp_length = 537)
+rmse_kalman <- function(p, df){
+  
+  queue <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = p[1], C_in = p[2], C_out = p[3], ramp_length = 537)
   # compute moving average: might want to do this ahead of time?
   MAQueue <- (lag(queue) + queue + lead(queue))/3
   rmse(observed_queue, MAQueue)
@@ -96,6 +97,6 @@ rmse_kalman <- function(p, observed_queue, v_in, v_out, occupancy){
 
 # Optimize:
 # Find the values of C and K that will minimize the objective function
-optim(c(0.22, 1), rmse_kalman, observed_queue, v_in, v_out, occupancy)
+optim(c(0.22, 1, 1), rmse_kalman, df = detector)
 ```
 

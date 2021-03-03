@@ -97,6 +97,6 @@ rmse_kalman <- function(p, df){
 
 # Optimize:
 # Find the values of C and K that will minimize the objective function
-optim(c(0.22, 1, 1), rmse_kalman, df = detector)
+optim(c(0.22, 1, 1), rmse_kalman, df = detector, lower = c(-Inf, 0, 0))
 ```
 

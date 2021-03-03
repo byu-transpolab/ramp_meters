@@ -19,7 +19,7 @@ We describe our methods in this chapter.
 #' @param n_lanes Number of lanes on ramp.
 #' @param veh_length Average assumed vehicle length with safety buffer
 #' 
-kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = 1.0, period_length = 1,
+kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C_in = 1.0, C_out = 1.0, period_length = 1,
                           ramp_length, n_lanes = 2, veh_length = 24){
   
   queue <- rep(0, length(v_in))
@@ -28,7 +28,7 @@ kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = 1.0, period_leng
   qhat <- occupancy * ramp_length * n_lanes / veh_length
   
   # kalman filter equation for queue
-  queue <- lag(queue) + period_length * (C * v_in - v_out) + K * (qhat - lag(queue))
+  queue <- lag(queue) + period_length * (C_in * v_in - C_out * v_out) + K * (qhat - lag(queue))
   
   # queue must be non-negative
   ifelse(queue < 0, 0, queue)

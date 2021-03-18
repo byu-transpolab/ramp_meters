@@ -1,7 +1,18 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Methods
 ```{r setup}
 library(tidyverse)
 library(readxl)
+library(ggplot2)
+library(ggpmisc)
+library(scales)
+library(DT)
+library(dplyr)
+library(devEMF)
 ```
 
 We describe our methods in this chapter.
@@ -23,7 +34,7 @@ kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = NA, period_lengt
   
 
     # estimate of queue based on density
-  qhat <- occupancy * ramp_length * n_lanes / veh_length
+  qhat <- (occupancy/100) * ramp_length * n_lanes / veh_length
   
   # conservation model of queue length - C is a factor of the total error between
   # in and out
@@ -61,7 +72,9 @@ detector <- layton %>%
   mutate(
     v_in = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3,
     v_out = Auto_Pass_1 + Auto_Pass_2,
-    occupancy = (EQ_1_Occ + EQ_2_Occ)/ 2
+    occupancy = (EQ_1_Occ + EQ_2_Occ)/ 2,
+    Manual_EQ_Tot = Manual_EQ_1 + Manual_EQ_2 + Manual_EQ_3,
+    Detector_EQ_Tot = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3
   )
   
 ```
@@ -117,20 +130,66 @@ optim(c(0.22), rmse_kalman, df = detector)
 ```{r split}
 rmse022 <- function(df){rmse_kalman(0.22, df)}
 
-optim_rmse <- function(df){
-  optim_results <- optim(c(0.22), rmse_kalman, df = df, method = "Brent", lower = -10, upper = 10)
+optim_k <- function(df){
+  optim_results <- optim(c(0.22), rmse_kalman, df = df)
   optim_results$par
+}
+
+
+optim_rmse <- function(df){
+  optim_results <- optim(c(0.22), rmse_kalman, df = df)
+  optim_results$value
 }
 
 optim_rmse(detector)
 
-detector %>%
-  mutate(dow = lubridate::wday(`Start_time`)) %>%
+optimal_values <- detector %>%
+  mutate(dow = lubridate::day(`Start_time`)) %>%
   group_by(dow) %>%
   nest() %>%
   mutate(
     rmse_at_22 = map_dbl(data, rmse022),
-    optim_k = map_dbl(data, optim_rmse)
+    optim_k = map_dbl(data, optim_k),
+    optim_rmse = map_dbl(data, optim_rmse)
+    
   )
 ```
+```{r layton EQ, warning=FALSE, message=FALSE, results=FALSE}
 
+# Compare EQ Detector and Manual Counts
+formula1 <- y ~ x
+eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) + geom_jitter() +  
+  xlab("EQ Manual Count Volume (veh/min)") + ylab("EQ Detector Volume (veh/min)") +
+  geom_smooth(method="lm",se=FALSE) +
+  stat_poly_eq(formula=formula1,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
+  scale_x_continuous(breaks=c(0,5,10,15,20,25))
+  scale_y_continuous(breaks=c(0,5,10,15,20,25))
+  print(eq1)
+```
+
+```{r layton Manual vs. Conservation Model, warning=FALSE, message=FALSE}
+
+detector %>% 
+  mutate(day = lubridate::day(Start_time)) %>%
+  left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
+  group_by(day) %>%
+  transmute(`Start time` = Start_time, 
+            Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
+            Manual = Queue_size,
+            day = str_c(day, "k = ", round(optim_k, 4))) %>%
+ gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
+  geom_line()+
+  facet_wrap(~day, scales = "free") +
+  ggtitle("Manual vs Estimated Counts Using Conservation Model") +
+  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))
+```
+```{r layton Manual vs. Kalman Filter Model, warning=FALSE, message=FALSE}
+
+detector %>% transmute(`Start_time`, Model = ???, Manual = lag(`Queue size`)) %>%
+ gather(key = "Legend", value = "Queue Size", -`Start time`)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) +
+  geom_line()+
+  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") +
+  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))
+```

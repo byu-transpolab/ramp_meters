@@ -53,7 +53,7 @@ kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = NA, period_lengt
   }
 
   # queue must be non-negative
-  ifelse(queue < 0, 0, queue)
+  ifelse(queue < 0, queue, queue)
 }
 ```
 
@@ -176,14 +176,13 @@ detector %>%
   group_by(day) %>%
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
-            Manual = Queue_size,
-            day = str_c(day, "k = ", round(optim_k, 4))) %>%
+            Manual = Queue_size) %>%
  gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
 ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
-  geom_line()+
+  geom_line() +
   facet_wrap(~day, scales = "free") +
   ggtitle("Manual vs Estimated Counts Using Conservation Model") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))
+  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24)) 
 ```
 
 ```{r layton Manual vs. Kalman Filter Model, warning=FALSE, message=FALSE}
@@ -195,10 +194,10 @@ detector %>%
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
             Manual = Queue_size,
-            day = str_c(day, "k = ", round(optim_k, 4))) %>%
+            day = str_c(day, ", k = ", round(optim_k, 4))) %>%
  gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
 ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
-  geom_line()+
+  geom_line() +
   facet_wrap(~day, scales = "free") +
   ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") +
   scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))

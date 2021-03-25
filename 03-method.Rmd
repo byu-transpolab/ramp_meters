@@ -49,11 +49,11 @@ kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = NA, period_lengt
   for (i in 1:length(v_in)){
     lastqueue <- if(i == 1) 0 else queue[i-1]
     queue[i] <- lastqueue + conservation[i] + K * (qhat[i] - lastqueue)
-    
+    if(queue[i]<0) queue[i] <- 0
   }
 
   # queue must be non-negative
-  ifelse(queue < 0, queue, queue)
+  queue
 }
 ```
 
@@ -127,6 +127,8 @@ rmse_kalman(0,detector)
 # Find the values of C and K that will minimize the objective function
 optim(c(0.22), rmse_kalman, df = detector)
 ```
+
+
 ```{r split}
 rmse022 <- function(df){rmse_kalman(0.22, df)}
 
@@ -191,6 +193,7 @@ detector %>%
   mutate(day = lubridate::day(Start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
+  filter(day %in% c(19,20)) %>% 
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
             Manual = Queue_size,

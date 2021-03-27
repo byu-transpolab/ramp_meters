@@ -13,11 +13,12 @@ library(scales)
 library(DT)
 library(dplyr)
 library(devEMF)
+library(zoo)
 ```
 
 We describe our methods in this chapter.
 
-
+## Creating Conservation/Kalman Filter Function
 ```{r kalman_function}
 #' Function to compute estimated queue length via a Kalman filter
 #'
@@ -68,7 +69,7 @@ layton <- read_excel("data/layton_counts.xlsx")
 
 detector <- layton %>%
   select(Start_time, Queue_size, contains("Manual"),
-         contains("Auto"), EQ_1_Occ, EQ_2_Occ)  %>%
+         contains("Auto"), EQ_1_Occ, EQ_2_Occ, Meter_rate_vph, Q_out)  %>%
   mutate(
     v_in = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3,
     v_out = Auto_Pass_1 + Auto_Pass_2,
@@ -157,11 +158,14 @@ optimal_values <- detector %>%
   )
 ```
 
+
+## Manual vs. Detector EQ Plot
 ```{r layton EQ, warning=FALSE, message=FALSE, results=FALSE}
 
 # Compare EQ Detector and Manual Counts
 formula1 <- y ~ x
-eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) + geom_jitter() +  
+eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) + 
+  geom_jitter() +  
   xlab("EQ Manual Count Volume (veh/min)") + ylab("EQ Detector Volume (veh/min)") +
   geom_smooth(method="lm",se=FALSE) +
   stat_poly_eq(formula=formula1,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
@@ -170,12 +174,30 @@ eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) + geom_jitter() +
   print(eq1)
 ```
 
+## Manual vs. Detector PQ Plot
+```{r layton PQ, warning=FALSE, message=FALSE, results=FALSE}
+
+# Compare PQ Detector and Manual Counts
+formula2 <- y ~ x
+eq2 <- ggplot(detector,aes(Q_out,v_out)) + 
+  geom_jitter() +  
+  xlab("PQ Manual Count Volume (veh/min)") + ylab("PQ Detector Volume (veh/min)") +
+  geom_smooth(method="lm",se=FALSE) +
+  stat_poly_eq(formula=formula2,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
+  scale_x_continuous(breaks=c(0,5,10,15,20,25))
+  scale_y_continuous(breaks=c(0,5,10,15,20,25))
+  print(eq2)
+```
+
+
+## Conservation Model Plot
 ```{r layton Manual vs. Conservation Model, warning=FALSE, message=FALSE}
 
 detector %>% 
   mutate(day = lubridate::day(Start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
+  filter(day %in% c(25)) %>%
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
             Manual = Queue_size) %>%
@@ -183,17 +205,19 @@ detector %>%
 ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
   geom_line() +
   facet_wrap(~day, scales = "free") +
-  ggtitle("Manual vs Estimated Counts Using Conservation Model") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24)) 
+  ggtitle("Manual vs Estimated Counts Using Conservation Model") 
+  #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32)) 
 ```
 
+
+## Kalman Filter Model Plot
 ```{r layton Manual vs. Kalman Filter Model, warning=FALSE, message=FALSE}
 
 detector %>% 
   mutate(day = lubridate::day(Start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
-  filter(day %in% c(19,20)) %>% 
+  filter(day %in% c(25)) %>% 
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
             Manual = Queue_size,
@@ -202,7 +226,7 @@ detector %>%
 ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
   geom_line() +
   facet_wrap(~day, scales = "free") +
-  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24))
+  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") 
+  #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
 ```
 

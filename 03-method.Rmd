@@ -81,8 +81,7 @@ detector <- layton %>%
 ```
 
 
-This stuff might actually belong in the results / application page. But it's
-here for now.
+## Calculating Kalman Filter
 
 ```{r kalman_apply}
 # calculate kalman filter
@@ -93,7 +92,7 @@ estimated_queues <- detector %>%
   group_by(day) %>%
   mutate(
     kalman = kalman_filter(v_in, v_out, occupancy, ramp_length = 537)
-    # here is where your other conservation goes? 
+    
   ) %>%
   ungroup() %>%
   select(Start_time, Queue_size, kalman)

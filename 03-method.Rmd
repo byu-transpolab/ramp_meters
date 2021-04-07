@@ -69,11 +69,11 @@ layton <- read_excel("data/layton_counts.xlsx")
 
 detector <- layton %>%
   select(Start_time, Queue_size, contains("Manual"),
-         contains("Auto"), EQ_1_Occ, EQ_2_Occ, Meter_rate_vph, Q_out)  %>%
+         contains("Auto"), IQ_1_Occ, IQ_2_Occ, Meter_rate_vph, Q_out)  %>%
   mutate(
     v_in = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3,
     v_out = Auto_Pass_1 + Auto_Pass_2,
-    occupancy = (EQ_1_Occ + EQ_2_Occ)/ 2,
+    occupancy = (IQ_1_Occ + IQ_2_Occ)/ 2,
     Manual_EQ_Tot = Manual_EQ_1 + Manual_EQ_2 + Manual_EQ_3,
     Detector_EQ_Tot = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3
   )
@@ -196,7 +196,7 @@ detector %>%
   mutate(day = lubridate::day(Start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
-  filter(day %in% c(25)) %>%
+  #filter(day %in% c(21)) %>%
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
             Manual = Queue_size) %>%
@@ -216,7 +216,7 @@ detector %>%
   mutate(day = lubridate::day(Start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
-  filter(day %in% c(25)) %>% 
+  #filter(day %in% c(21)) %>% 
   transmute(`Start time` = Start_time, 
             Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
             Manual = Queue_size,
@@ -229,3 +229,24 @@ ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) +
   #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
 ```
 
+## Both
+```{r layton Manual vs. Conservation and Kalman Filter Model, warning=FALSE, message=FALSE}
+
+detector %>% 
+  mutate(day = lubridate::day(Start_time)) %>%
+  left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
+  group_by(day) %>%
+  filter(day %in% c(21)) %>% 
+  transmute(`Start time` = Start_time, 
+            Conservation = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
+            Kalman = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
+            Manual = Queue_size,
+            day = str_c(day, ", k = ", round(optim_k, 4))) %>%
+ gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
+  geom_line() +
+  facet_wrap(~day, scales = "free") +
+  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") 
+  #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
+
+```

@@ -23,7 +23,8 @@ list(
   
   
   # data analysis and plotting functions
-  tar_target(default_k, rmse_kalman(0.22, df))
+  tar_target(default_k, rmse_kalman(0.22, df)),
+  tar_target(group_k , group_optimize_k(df))
   
   
 )

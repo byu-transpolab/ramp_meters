@@ -20,42 +20,7 @@ We describe our methods in this chapter.
 
 ## Creating Conservation/Kalman Filter Function
 ```{r kalman_function}
-#' Function to compute estimated queue length via a Kalman filter
-#'
-#' @param v_in vector of vehicles entering queue in time 
-#' @param v_out vector of vehicles entering queue in time 
-#' @param K Coefficient of 
-#' @param period_length in minutes
-#' @param ramp_length Length of the ramp in feet
-#' @param n_lanes Number of lanes on ramp.
-#' @param veh_length Average assumed vehicle length with safety buffer
-#' 
-kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = NA, period_length = 1,
-                          ramp_length, n_lanes = 2, veh_length = 24){
-  
 
-    # estimate of queue based on density
-  qhat <- (occupancy/100) * ramp_length * n_lanes / veh_length
-  
-  # conservation model of queue length - C is a factor of the total error between
-  # in and out
-  if(is.na(C)) {
-      C <- sum(v_in) / sum(v_out)
-  }
-
-  conservation <- period_length * (v_in - C * v_out)
-  
-  # loop through periods
-  queue <- rep(0, length(v_in)) # create a vector of zeros to store everything
-  for (i in 1:length(v_in)){
-    lastqueue <- if(i == 1) 0 else queue[i-1]
-    queue[i] <- lastqueue + conservation[i] + K * (qhat[i] - lastqueue)
-    if(queue[i]<0) queue[i] <- 0
-  }
-
-  # queue must be non-negative
-  queue
-}
 ```
 
 
@@ -67,16 +32,7 @@ layton <- read_excel("data/layton_counts.xlsx")
 # read data from other places later.
 
 
-detector <- layton %>%
-  select(Start_time, Queue_size, contains("Manual"),
-         contains("Auto"), IQ_1_Occ, IQ_2_Occ, Meter_rate_vph, Q_out)  %>%
-  mutate(
-    v_in = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3,
-    v_out = Auto_Pass_1 + Auto_Pass_2,
-    occupancy = (IQ_1_Occ + IQ_2_Occ)/ 2,
-    Manual_EQ_Tot = Manual_EQ_1 + Manual_EQ_2 + Manual_EQ_3,
-    Detector_EQ_Tot = Auto_EQ_1 + Auto_EQ_2 + Auto_EQ_3
-  )
+
   
 ```
 
@@ -100,25 +56,11 @@ estimated_queues <- detector %>%
 
 
 ```{r rmse_function}
-# function to compute root mean squared error between two vectors (strangely
-# not in R by default)
-rmse <- function(x, y){
-  sqrt(mean(( x - y )^2, na.rm = TRUE))
-}
+
 ```
 
 
 ```{r kalman_optim}
-# Objective function: 
-# a function that will return the RMSE between our observed and 
-# and kalman-calculated queues for different values of C and K
-rmse_kalman <- function(p, df){
-  
-  queue <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = p[1], ramp_length = 537)
-  # compute moving average: might want to do this ahead of time?
-  #MAQueue <- (lag(queue) + queue + lead(queue))/3
-  rmse(df$Queue_size, queue)
-}
 
 rmse_kalman(0.22, detector)
 rmse_kalman(0,detector)

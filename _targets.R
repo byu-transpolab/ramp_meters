@@ -13,7 +13,7 @@ source("R/data_functions.R")
 source("R/analysis_functions.R")
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse", "readxl"))
+tar_option_set(packages = c("tidyverse", "readxl", "lubridate"))
 
 # End this file with a list of target objects.
 list(

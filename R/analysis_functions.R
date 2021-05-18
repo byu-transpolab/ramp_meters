@@ -92,11 +92,11 @@ group_optimize_k <- function(df){
 }
 
 
-plot_optim_default_rmse(group_k){
-  ggplot(group_k, aes(x = optim_rmse, y = rmse_at_22, color = log(optim_k + 0.1))) + 
-    geom_point() + 
-    scale_color_viridis_c()
-}
+#plot_optim_default_rmse(group_k){
+ # ggplot(group_k, aes(x = optim_rmse, y = rmse_at_22, color = log(optim_k + 0.1))) + 
+  #  geom_point() + 
+   # scale_color_viridis_c()
+#}
 
 
 

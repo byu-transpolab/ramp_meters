@@ -19,12 +19,15 @@ tar_option_set(packages = c("tidyverse", "readxl", "lubridate"))
 list(
   # data cleaning and grouping pipeline
   tar_target(raw_data, read_raw_data(c("data/layton_counts.xlsx"))),
-  tar_target(df, clean_data(raw_data)), 
+  # add intermediate target to adjust for time-stamp issues (to do)
+  tar_target(df, clean_data(raw_data)),
   
   
   # data analysis and plotting functions
   tar_target(default_k, rmse_kalman(0.22, df)),
   tar_target(group_k , group_optimize_k(df))
-  
-  
+  # (example) tar_target(AM_plot,make_plot(group_k,"AM")),
+  # (example) tar_target(PM_plot,make_plot(group_k,"PM"))
+
 )
+

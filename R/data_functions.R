@@ -16,6 +16,8 @@ read_raw_data <- function(files){
 #' 
 #' @param raw_data The tibble returned by read_raw_data
 #' @return A tibble with cleaned data
+#' 
+
 clean_data <- function(raw_data){
   raw_data %>%
     select(Start_time, Queue_size, contains("Manual"),
@@ -35,3 +37,5 @@ clean_data <- function(raw_data){
 #' @param df
 #' 
 #' 
+
+

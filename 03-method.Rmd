@@ -20,9 +20,43 @@ We describe our methods in this chapter.
 
 ## Creating Conservation/Kalman Filter Function
 ```{r kalman_function}
+#' Function to compute estimated queue length via a Kalman filter
+#'
+#' @param v_in vector of vehicles entering queue in time 
+#' @param v_out vector of vehicles entering queue in time 
+#' @param K Coefficient of 
+#' @param period_length in minutes
+#' @param ramp_length Length of the ramp in feet
+#' @param n_lanes Number of lanes on ramp.
+#' @param veh_length Average assumed vehicle length with safety buffer
+#' 
+kalman_filter <- function(v_in, v_out, iq_occ, K = 0.22, C = NA, period_length = 1,
+                          ramp_length, n_lanes = 2, veh_length = 24){
+  
 
+    # estimate of queue based on density
+  qhat <- (iq_occ/100) * ramp_length * n_lanes / veh_length
+  
+  # conservation model of queue length - C is a factor of the total error between
+  # in and out
+  if(is.na(C)) {
+      C <- sum(v_in) / sum(v_out)
+  }
+
+  conservation <- period_length * (v_in - C * v_out)
+  
+  # loop through periods
+  queue <- rep(0, length(v_in)) # create a vector of zeros to store everything
+  for (i in 1:length(v_in)){
+    lastqueue <- if(i == 1) 0 else queue[i-1]
+    queue[i] <- lastqueue + conservation[i] + K * (qhat[i] - lastqueue)
+    if(queue[i]<0) queue[i] <- 0
+  }
+
+  # queue must be non-negative
+  queue
+}
 ```
-
 
 ## Data
 Read in the data. 
@@ -32,7 +66,19 @@ layton <- read_excel("data/layton_counts.xlsx")
 # read data from other places later.
 
 
-
+detector <- layton %>%
+  select(start_time, man_q_len, contains("man"),
+         contains("det"), iq_1_occ, iq_2_occ, pq_1_occ, pq_2_occ, meter_rate_vph, man_v_out, man_tot_on_ramp)  %>%
+  mutate(
+    v_in = det_eq_1 + det_eq_2 + det_eq_3,
+    v_out = det_pq_1 + det_pq_2,
+    iq_occ = (iq_1_occ + iq_2_occ)/ 2,
+    pq_occ = (pq_1_occ + pq_2_occ)/ 2,
+    meter_rate_vpm = meter_rate_vph/60,
+    density=man_tot_on_ramp/((537/5280)*2), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
+    man_eq_tot = man_eq_1 + man_eq_2 + man_eq_3,
+    det_eq_tot = det_eq_1 + det_eq_2 + det_eq_3
+  )
   
 ```
 
@@ -43,24 +89,36 @@ layton <- read_excel("data/layton_counts.xlsx")
 # calculate kalman filter
 estimated_queues <- detector %>%
   mutate(
-    day = lubridate::wday(Start_time)
+    day = lubridate::wday(start_time)
   ) %>%
   group_by(day) %>%
   mutate(
-    kalman = kalman_filter(v_in, v_out, occupancy, ramp_length = 537)
+    kalman = kalman_filter(v_in, v_out, iq_occ, ramp_length = 537)
     
   ) %>%
   ungroup() %>%
-  select(Start_time, Queue_size, kalman)
+  select(start_time, man_q_len, kalman)
 ```
-
 
 ```{r rmse_function}
-
+# function to compute root mean squared error between two vectors (strangely
+# not in R by default)
+rmse <- function(x, y){
+  sqrt(mean(( x - y )^2, na.rm = TRUE))
+}
 ```
 
-
 ```{r kalman_optim}
+# Objective function: 
+# a function that will return the RMSE between our observed and 
+# and kalman-calculated queues for different values of C and K
+rmse_kalman <- function(p, df){
+  
+  queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = 537)
+  # compute moving average: might want to do this ahead of time?
+  #MAQueue <- (lag(queue) + queue + lead(queue))/3
+  rmse(df$man_q_len, queue)
+}
 
 rmse_kalman(0.22, detector)
 rmse_kalman(0,detector)
@@ -69,7 +127,6 @@ rmse_kalman(0,detector)
 # Find the values of C and K that will minimize the objective function
 optim(c(0.22), rmse_kalman, df = detector)
 ```
-
 
 ```{r split}
 rmse022 <- function(df){rmse_kalman(0.22, df)}
@@ -84,30 +141,110 @@ optim_rmse <- function(df){
   optim_results <- optim(c(0.22), rmse_kalman, df = df)
   optim_results$value
 }
+```
 
-optim_rmse(detector)
+## Creating summary table
+```{r}
+
+mean_occ <- function(df){
+  mean(df$pq_occ, na.rm = TRUE)
+}
+
+meter_rate_vpm <- function(df){
+  mean(df$meter_rate_vpm, na.rm = TRUE)
+}
+
+density <- function(df){
+  mean(df$density, na.rm = TRUE)
+}
 
 optimal_values <- detector %>%
-  mutate(dow = lubridate::day(`Start_time`)) %>%
+  mutate(dow = lubridate::day(`start_time`)) %>%
   group_by(dow) %>%
+  #filter(dow %in% c(21)) %>%
   nest() %>%
   mutate(
     rmse_at_22 = map_dbl(data, rmse022),
     optim_k = map_dbl(data, optim_k),
-    optim_rmse = map_dbl(data, optim_rmse)
+    optim_rmse = map_dbl(data, optim_rmse),
+    pq_occ = map_dbl(data, mean_occ),
+    meter_rate_vpm = map_dbl(data, meter_rate_vpm),
+    density = map_dbl(data, density)
     
   )
+
+#optim_rmse(detector)
+
+```
+
+## optim_k vs mean pq_occ
+```{r}
+ggplot(optimal_values,aes(x = pq_occ, y = optim_k)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  stat_poly_eq(formula = y ~ x,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) +
+  ggtitle("Optimized K vs. Mean PQ Occupancy") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  xlab("PQ Occupancy (%)") +
+  ylab("Optimized K")
+```
+
+## optim_k vs mean meter_rate_vpm
+```{r}
+ggplot(optimal_values,aes(x = meter_rate_vpm, y = optim_k)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  stat_poly_eq(formula = y ~ x ,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) +
+  ggtitle("Optimized K vs. Mean Metering Rate") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  xlab("Metering Rate (vpm)") +
+  ylab("Optimized K")
+```
+
+## optim_k vs mean density linear fit
+```{r}
+ggplot(optimal_values,aes(x = density, y = optim_k)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  stat_poly_eq(formula = y ~ x,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
+  ggtitle("Optimized K vs. Mean Density with Linear Fit") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  xlab("Density (veh/mi/ln)") +
+  ylab("Optimized K")
+```
+
+## optim_k vs mean density quadratic fit
+```{r}
+ggplot(optimal_values,aes(x = density, y = optim_k)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1) + 
+  stat_poly_eq(formula = y ~ x + I(x^2),aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
+  ggtitle("Optimized K vs. Mean Density with Quadratic Fit") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  xlab("Density (veh/mi/ln)") +
+  ylab("Optimized K")
 ```
 
 
-## Manual vs. Detector EQ Plot
-```{r layton EQ, warning=FALSE, message=FALSE, results=FALSE}
-
-# Compare EQ Detector and Manual Counts
+## v_out vs meter_rate
+```{r}
 formula1 <- y ~ x
-eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) + 
+ggplot(detector, aes(x = v_out, y = meter_rate_vpm)) + 
+  geom_point(alpha = 0.1) +
+  stat_smooth() +
+  geom_abline(intercept = 0, slope = 1) +
+  stat_poly_eq(formula=formula1,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE)
+
+```
+
+## man vs. det eq Plot
+```{r layton eq, warning=FALSE, message=FALSE, results=FALSE}
+
+# Compare eq det and man Counts
+formula1 <- y ~ x
+eq1 <- ggplot(detector,aes(man_eq_tot,det_eq_tot)) + 
   geom_jitter() +  
-  xlab("EQ Manual Count Volume (veh/min)") + ylab("EQ Detector Volume (veh/min)") +
+  xlab("eq man Count Volume (veh/min)") + ylab("eq det Volume (veh/min)") +
   geom_smooth(method="lm",se=FALSE) +
   stat_poly_eq(formula=formula1,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
   scale_x_continuous(breaks=c(0,5,10,15,20,25))
@@ -115,14 +252,14 @@ eq1 <- ggplot(detector,aes(Manual_EQ_Tot,Detector_EQ_Tot)) +
   print(eq1)
 ```
 
-## Manual vs. Detector PQ Plot
-```{r layton PQ, warning=FALSE, message=FALSE, results=FALSE}
+## man vs. det pq Plot
+```{r layton pq, warning=FALSE, message=FALSE, results=FALSE}
 
-# Compare PQ Detector and Manual Counts
+# Compare pq det and man Counts
 formula2 <- y ~ x
-eq2 <- ggplot(detector,aes(Q_out,v_out)) + 
+eq2 <- ggplot(detector,aes(man_v_out,v_out)) + 
   geom_jitter() +  
-  xlab("PQ Manual Count Volume (veh/min)") + ylab("PQ Detector Volume (veh/min)") +
+  xlab("pq man Count Volume (veh/min)") + ylab("pq det Volume (veh/min)") +
   geom_smooth(method="lm",se=FALSE) +
   stat_poly_eq(formula=formula2,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) + 
   scale_x_continuous(breaks=c(0,5,10,15,20,25))
@@ -130,65 +267,86 @@ eq2 <- ggplot(detector,aes(Q_out,v_out)) +
   print(eq2)
 ```
 
-
 ## Conservation Model Plot
-```{r layton Manual vs. Conservation Model, warning=FALSE, message=FALSE}
+```{r layton man vs. Conservation Model, warning=FALSE, message=FALSE}
 
 detector %>% 
-  mutate(day = lubridate::day(Start_time)) %>%
+  mutate(day = lubridate::day(start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
   #filter(day %in% c(21)) %>%
-  transmute(`Start time` = Start_time, 
-            Model = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
-            Manual = Queue_size) %>%
- gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
-ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
+  transmute(`Start time` = start_time, 
+            Model = kalman_filter(v_in, v_out, iq_occ, K = 0, ramp_length = 537),
+            man = man_q_len,
+            meter_rate = meter_rate_vpm ) %>%
+ gather(key = "Legend", value = "Queue Length", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Length`, color = `Legend`)) + 
   geom_line() +
   facet_wrap(~day, scales = "free") +
-  ggtitle("Manual vs Estimated Counts Using Conservation Model") 
+  ggtitle("man vs Estimated Counts Using Conservation Model") 
   #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32)) 
 ```
 
-
-## Kalman Filter Model Plot
-```{r layton Manual vs. Kalman Filter Model, warning=FALSE, message=FALSE}
+## Kalman Filter Model Plot with meter_rate
+```{r layton man vs. Kalman Filter Model, warning=FALSE, message=FALSE}
 
 detector %>% 
-  mutate(day = lubridate::day(Start_time)) %>%
+  mutate(day = lubridate::day(start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
-  #filter(day %in% c(21)) %>% 
-  transmute(`Start time` = Start_time, 
-            Model = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
-            Manual = Queue_size,
+  filter(day %in% c(2)) %>% 
+  transmute(`Start time` = start_time, 
+            Model = kalman_filter(v_in, v_out, iq_occ, K = optim_k[1], ramp_length = 537),
+            man = man_q_len,
+            meter_rate = meter_rate_vpm,
             day = str_c(day, ", k = ", round(optim_k, 4))) %>%
- gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
-ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
+ gather(key = "Legend", value = "Queue Length", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Length`, color = `Legend`)) + 
   geom_line() +
   facet_wrap(~day, scales = "free") +
-  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") 
+  ggtitle("man vs Estimated Counts Using Kalman Filter Model") 
+  #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
+```
+
+## Kalman Filter Model Plot
+```{r layton man vs. Kalman Filter Model, warning=FALSE, message=FALSE}
+
+detector %>% 
+  mutate(day = lubridate::day(start_time)) %>%
+  left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
+  group_by(day) %>%
+  #filter(day %in% c(21,17,28,3)) %>% 
+  transmute(`Start time` = start_time, 
+            Model = kalman_filter(v_in, v_out, iq_occ, K = optim_k[1], ramp_length = 537),
+            Manual = man_q_len,
+            day = str_c(day, ", k = ", round(optim_k, 4))) %>%
+ gather(key = "Legend", value = "Queue Length", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Length`, color = `Legend`)) + 
+  geom_line() +
+  facet_wrap(~day, scales = "free") +
+  ggtitle("man vs Estimated Counts Using Kalman Filter Model") 
   #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
 ```
 
 ## Both
-```{r layton Manual vs. Conservation and Kalman Filter Model, warning=FALSE, message=FALSE}
+```{r layton man vs. Conservation and Kalman Filter Model, warning=FALSE, message=FALSE}
 
 detector %>% 
-  mutate(day = lubridate::day(Start_time)) %>%
+  mutate(day = lubridate::day(start_time)) %>%
   left_join(optimal_values %>% select(day = dow, optim_k), by = "day") %>%
   group_by(day) %>%
-  filter(day %in% c(21)) %>% 
-  transmute(`Start time` = Start_time, 
-            Conservation = kalman_filter(v_in, v_out, occupancy, K = 0, ramp_length = 537),
-            Kalman = kalman_filter(v_in, v_out, occupancy, K = optim_k[1], ramp_length = 537),
-            Manual = Queue_size,
+  #filter(day %in% c(21)) %>% 
+  transmute(`Start time` = start_time, 
+            Conservation = kalman_filter(v_in, v_out, iq_occ, K = 0, ramp_length = 537),
+            Kalman = kalman_filter(v_in, v_out, iq_occ, K = optim_k[1], ramp_length = 537),
+            man = man_q_len,
+            meter_rate = meter_rate_vpm,
             day = str_c(day, ", k = ", round(optim_k, 4))) %>%
- gather(key = "Legend", value = "Queue Size", -`Start time`, -day)  %>%
-ggplot(aes(x = `Start time`, y = `Queue Size`, color = `Legend`)) + 
+ gather(key = "Legend", value = "Queue Length", -`Start time`, -day)  %>%
+ggplot(aes(x = `Start time`, y = `Queue Length`, color = `Legend`)) + 
   geom_line() +
   facet_wrap(~day, scales = "free") +
-  ggtitle("Manual vs Estimated Counts Using Kalman Filter Model") 
+  ggtitle("man vs Estimated Counts Using Kalman Filter Model") 
   #scale_y_continuous(breaks=c(0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32))
 
 ```

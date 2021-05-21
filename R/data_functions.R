@@ -4,20 +4,19 @@
 #' @return A tibble with the necessary data
 #'
 read_raw_data <- function(files){
-  
   lapply(files, function(f){
     read_excel(f)
   }) %>%
     bind_rows(.id = "file")
-  
 }
+
+
 
 #' Clean the data
 #' 
 #' @param raw_data The tibble returned by read_raw_data
 #' @return A tibble with cleaned data
 #' 
-
 clean_data <- function(raw_data){
   raw_data %>%
     select(Start_time, Queue_size, contains("Manual"),
@@ -31,11 +30,59 @@ clean_data <- function(raw_data){
     )
 }
 
+#' Adjust the timebins
+#' 
+#' @param cleaned_data
+#' @return A dataframe with the time bins corrected
+adjust_timebins <- function(raw_detector_data, raw_manual_data){
+  
+  # TODO: Adjust time stamps, join together
+  cleaned_data
+  
+}
+
+#' Nest the data
+#' 
+#' @param cleaned_data
+nest_data <- function(cleaned_data, ...){
+  cleaned_data %>%
+    mutate(
+      day = lubridate::day(`Start_time`),
+      hour = lubridate::hour(`Start_time`),
+      minute = lubridate::minute(`Start_time`),
+      period = minute %/% 30
+    ) %>%
+    group_by(day, hour, period) %>%
+    nest() 
+}
+
 
 #' Get data columns for correlation analysis
 #' 
 #' @param df
 #' 
 #' 
+get_correlation_data <- function(nested_data) {
+  nested_data %>%
+    mutate(
+      pq_occ = map_dbl(data, mean_occ),
+      meter_rate_vpm = map_dbl(data, meter_rate_vpm),
+      density = map_dbl(data, density)
+    ) %>% 
+    select(-data)
+  
+}
+
+mean_occ <- function(df){
+  mean(df$pq_occ, na.rm = TRUE)
+}
+
+meter_rate_vpm <- function(df){
+  mean(df$meter_rate_vpm, na.rm = TRUE)
+}
+
+density <- function(df){
+  mean(df$density, na.rm = TRUE)
+}
 
 

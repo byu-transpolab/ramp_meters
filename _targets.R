@@ -11,6 +11,7 @@ library(targets)
 # if you keep your functions in external scripts.
 source("R/data_functions.R")
 source("R/analysis_functions.R")
+source("R/plot_functions.R")
 
 # Set target-specific options such as packages.
 tar_option_set(packages = c("tidyverse", "readxl", "lubridate"))
@@ -18,16 +19,34 @@ tar_option_set(packages = c("tidyverse", "readxl", "lubridate"))
 # End this file with a list of target objects.
 list(
   # data cleaning and grouping pipeline
-  tar_target(raw_data, read_raw_data(c("data/layton_counts.xlsx"))),
-  # add intermediate target to adjust for time-stamp issues (to do)
-  tar_target(df, clean_data(raw_data)),
-  
+  tar_target(raw_detector_data, read_raw_data(c("data/layton_counts.xlsx"))),
+  tar_target(raw_manual_data, read_raw_data(c("data/layton_counts.xlsx"))),
+  # TODO add intermediate target to adjust for time-stamp issues 
+  # Should this happen before we read it in? not clear where this happens
+  tar_target(adjusted_data, adjust_timebins(raw_detector_data, raw_manual_data)),
+  tar_target(df, clean_data(adjusted_data)),
+  tar_target(nested_data, nest_data(df)),
+  tar_target(correlation_data, get_correlation_data(nested_data)),
   
   # data analysis and plotting functions
-  tar_target(default_k, rmse_kalman(0.22, df)),
-  tar_target(group_k , group_optimize_k(df))
+  tar_target(default_k_rmse, rmse_kalman(0.22, df)),
+  tar_target(group_k , group_optimize_k(nested_data)),
+  
+  # make plot data
+  tar_target(plot_data, make_plot_data(group_k)),
+  
   # (example) tar_target(AM_plot,make_plot(group_k,"AM")),
   # (example) tar_target(PM_plot,make_plot(group_k,"PM"))
+  
+  
+  
+  
+  # Put correlation data and optimal groupings on the same df
+  tar_target(model_data, join_correlation_data(group_k, correlation_data)) 
+  
+  
+  
+  
 
 )
 

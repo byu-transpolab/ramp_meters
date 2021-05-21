@@ -2,6 +2,17 @@
 
 Some _significant_ applications are demonstrated in this chapter.
 
+
+```{r}
+tar_load(plot_data)
+
+ggplot(plot_data %>% mutate(period = str_c(day, hour, period)), 
+       aes(x = time, y = queue_length, color = name)) + 
+  geom_line() +
+  facet_wrap(~period)
+```
+
+
 ## Example one
 
 ## Example two

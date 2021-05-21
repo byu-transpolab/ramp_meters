@@ -45,31 +45,37 @@ rmse <- function(x, y){
 }
 
 
-#' Objective function to optimize
+#' Return RMSE between Kalman filter prediction and queue
 #' 
 #' @param p A vector of parameters
-#' @param df Cleaned dataset
+#' @param df Cleaned dataset, must have columns
+#'   - v_in
+#'   - v_out
+#'   - occupancy
 rmse_kalman <- function(p, df){
-  
   queue <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = p[1], ramp_length = 537)
-  # compute moving average: might want to do this ahead of time?
-  #MAQueue <- (lag(queue) + queue + lead(queue))/3
   rmse(df$Queue_size, queue)
 }
 
 
 rmse022 <- function(df){rmse_kalman(0.22, df)}
 
-optim_k <- function(df){
-  optim_results <- optim(c(0.22), rmse_kalman, df = df)
-  optim_results$par
+
+#' Find the value of k that minimizes the RMSE between observed and modeled
+#' 
+#' @param df dataset
+#' 
+find_optimum_k <- function(df){
+  # start at the default value of 0.22
+  o <- optim(c(0.22), rmse_kalman, df = df)
+  
+  q <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = o$par, ramp_length = 537)
+  
+  list(optim = o, queue = q)
 }
 
 
-optim_rmse <- function(df){
-  optim_results <- optim(c(0.22), rmse_kalman, df = df)
-  optim_results$value
-}
+
 #' Group and optimize RMSE
 #' 
 #' @param df
@@ -78,28 +84,18 @@ optim_rmse <- function(df){
 group_optimize_k <- function(df){
   df %>%
     mutate(
-      day = lubridate::day(`Start_time`),
-      hour = lubridate::hour(`Start_time`),
-      minute = lubridate::minute(`Start_time`),
-      period = minute %/% 30
-    ) %>%
-    group_by(day, hour, period) %>%
-    nest() %>%
-    mutate(
       rmse_at_22 = map_dbl(data, rmse022),
-      optim_k = map_dbl(data, optim_k),
-      optim_rmse = map_dbl(data, optim_rmse)
+      optim = map(data, find_optimum_k),
+      optim_k = map_dbl(optim, function(x) x$optim$par),
+      rmse_at_k  = map_dbl(optim, function(x) x$optim$value),
+      queue_at_k = map(optim, function(x) x$queue)
     )
 }
 
 
-plot_optim_default_rmse <- function(group_k){
-  ggplot(group_k, aes(x = optim_rmse, y = rmse_at_22, color = log(optim_k + 0.1))) + 
-    geom_point() + 
-    scale_color_viridis_c()
+#' Join
+#'
+join_correlation_data <- function(group_k, correlation_data){
+  left_join(group_k, correlation_data)
+  
 }
-
-#adjust times 
-
-
-

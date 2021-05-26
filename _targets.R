@@ -19,8 +19,8 @@ tar_option_set(packages = c("tidyverse", "readxl", "lubridate"))
 # End this file with a list of target objects.
 list(
   # data cleaning and grouping pipeline
-  tar_target(raw_detector_data, read_raw_data(c("data/layton_counts.xlsx"))),
-  tar_target(raw_manual_data, read_raw_data(c("data/layton_counts.xlsx"))),
+  tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx"))),
+  tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx"))),
   # TODO add intermediate target to adjust for time-stamp issues 
   # Should this happen before we read it in? not clear where this happens
   tar_target(adjusted_data, adjust_timebins(raw_detector_data, raw_manual_data)),
@@ -34,7 +34,6 @@ list(
   
   # make plot data
   tar_target(plot_data, make_plot_data(group_k)),
-  
   # (example) tar_target(AM_plot,make_plot(group_k,"AM")),
   # (example) tar_target(PM_plot,make_plot(group_k,"PM"))
   

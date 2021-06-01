@@ -17,8 +17,6 @@ read_raw_data <- function(files){
 #' @return A data frame with the time bins corrected
 #'
 
-raw_manual_data <- read_excel("data/layton_manual.xlsx")
-raw_detector_data <- read_excel("data/layton_detector.xlsx")
 
 adjust_timebins <- function(raw_detector_data, raw_manual_data){
   # lead/lag adjustment to align the manual and detector counts based on rmse

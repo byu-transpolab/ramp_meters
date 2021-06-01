@@ -21,8 +21,6 @@ list(
   # data cleaning and grouping pipeline
   tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx"))),
   tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx"))),
-  # TODO add intermediate target to adjust for time-stamp issues 
-  # Should this happen before we read it in? not clear where this happens
   tar_target(adjusted_data, adjust_timebins(raw_detector_data, raw_manual_data)),
   tar_target(df, clean_data(adjusted_data)),
   tar_target(nested_data, nest_data(df)),
@@ -30,7 +28,7 @@ list(
   
   # data analysis and plotting functions
   tar_target(default_k_rmse, rmse_kalman(0.22, df)),
-  tar_target(group_k , group_optimize_k(nested_data)),
+  tar_target(group_k, group_optimize_k(nested_data)),
   
   # make plot data
   tar_target(plot_data, make_plot_data(group_k)),

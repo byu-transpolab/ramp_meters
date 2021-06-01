@@ -38,7 +38,7 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
       }
     }
     # calculate rmse
-    sqrt(mean((detector - manual)^2, na.rm = TRUE))
+    sqrt(mean((detector - manual_lag)^2, na.rm = TRUE))
   }  
   
   # calculate lead/lag rmse three minutes either direction

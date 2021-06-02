@@ -13,7 +13,7 @@ read_raw_data <- function(files){
 
 #' Adjust the time bins and combine detector and manual counts into one data frame
 #' 
-#' @param cleaned_data
+#' @param clean_data
 #' @return A data frame with the time bins corrected
 #'
 
@@ -73,23 +73,26 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
 clean_data <- function(adjusted_data){
   adjusted_data %>%
     select(start_time, contains("man"),
-           contains("det"), iq_1_occ, iq_2_occ, meter_rate_vph)  %>%
+           contains("det"), iq_1_occ, iq_2_occ, pq_1_occ, pq_2_occ, meter_rate_vph)  %>%
     mutate(
       v_in = det_eq_1 + det_eq_2 + det_eq_3,
       v_out = det_pq_1 + det_pq_2,
-      occupancy = (iq_1_occ + iq_2_occ) / 2,
       man_eq_tot = man_eq_1 + man_eq_2 + man_eq_3,
       det_eq_tot = det_eq_1 + det_eq_2 + det_eq_3,
-      meter_rate_vpm = meter_rate_vph / 60
+      iq_occ = (iq_1_occ + iq_2_occ) / 2,
+      pq_occ = (pq_1_occ + pq_2_occ) / 2,
+      density = man_tot_on_ramp/((537/5280)*2), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
+      meter_rate_vpm = meter_rate_vph / 60,
+      flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period
     )
 }
 
 
 #' Nest the data
 #' 
-#' @param cleaned_data
-nest_data <- function(cleaned_data, ...){
-  cleaned_data %>%
+#' @param clean_data
+nest_data <- function(clean_data, ...){
+  clean_data %>%
     mutate(
       day = lubridate::day(`start_time`),
       hour = lubridate::hour(`start_time`),
@@ -109,15 +112,21 @@ nest_data <- function(cleaned_data, ...){
 get_correlation_data <- function(nested_data) {
   nested_data %>%
     mutate(
-      pq_occ = map_dbl(data, mean_occ),
+      iq_occ = map_dbl(data, iq_occ),
+      pq_occ = map_dbl(data, pq_occ),
       meter_rate_vpm = map_dbl(data, meter_rate_vpm),
-      density = map_dbl(data, density)
+      density = map_dbl(data, density),
+      flow = map_dbl(data, flow)
     ) %>% 
     select(-data)
   
 }
 
-mean_occ <- function(df){
+iq_occ <- function(df){
+  mean(df$iq_occ, na.rm = TRUE)
+}
+
+pq_occ <- function(df){
   mean(df$pq_occ, na.rm = TRUE)
 }
 
@@ -129,4 +138,6 @@ density <- function(df){
   mean(df$density, na.rm = TRUE)
 }
 
-
+flow <- function(df){
+  mean(df$flow, na.rm = TRUE)
+}

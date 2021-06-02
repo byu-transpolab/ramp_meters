@@ -8,12 +8,12 @@
 #' @param n_lanes Number of lanes on ramp.
 #' @param veh_length Average assumed vehicle length with safety buffer
 #' 
-kalman_filter <- function(v_in, v_out, occupancy, K = 0.22, C = NA, period_length = 1,
-                          ramp_length, n_lanes = 2, veh_length = 24){
+kalman_filter <- function(v_in, v_out, iq_occ, K = 0.22, C = NA, period_length = 1,
+                          ramp_length, n_lanes = 2, veh_length = 28){
   
   
   # estimate of queue based on density
-  qhat <- (occupancy/100) * ramp_length * n_lanes / veh_length
+  qhat <- (iq_occ/100) * ramp_length * n_lanes / veh_length
   
   # conservation model of queue length - C is a factor of the total error between
   # in and out
@@ -51,9 +51,9 @@ rmse <- function(x, y){
 #' @param df Cleaned dataset, must have columns
 #'   - v_in
 #'   - v_out
-#'   - occupancy
+#'   - iq_occ
 rmse_kalman <- function(p, df){
-  queue <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = p[1], ramp_length = 537)
+  queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = 537)
   rmse(df$Queue_size, queue)
 }
 
@@ -69,7 +69,7 @@ find_optimum_k <- function(df){
   # start at the default value of 0.22
   o <- optim(c(0.22), rmse_kalman, df = df)
   
-  q <- kalman_filter(df$v_in, df$v_out, df$occupancy, K = o$par, ramp_length = 537)
+  q <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = o$par, ramp_length = 537)
   
   list(optim = o, queue = q)
 }

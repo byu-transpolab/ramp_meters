@@ -6,8 +6,8 @@
 make_plot_data <- function(group_k) {
   group_k  %>%
     mutate(
-      time = map(data, function(x) x$'Start_time'),
-      queue_observed = map(data, function(x) x$Queue_size),
+      time = map(data, function(x) x$'start_time'),
+      queue_observed = map(data, function(x) x$man_q_len),
     )  %>%
     rename(queue_modeled = queue_at_k) %>%
     unnest(cols = c(time, queue_modeled, queue_observed))  %>%
@@ -24,5 +24,9 @@ plot_optim_default_rmse <- function(group_k){
     scale_color_viridis_c()
 }
 
-
+#ggplot(model_data, aes(x = optim_k, y = density)) + 
+#  geom_point() + 
+#  stat_poly_eq(formula = log(y) ~ x, aes(label = paste(..eq.label..,..rr.label..,sep="~~~")), parse = TRUE) +
+#  geom_smooth(method = "glm", formula = y~x, se = FALSE,
+#              method.args = list(family = gaussian(link = 'log')))
 

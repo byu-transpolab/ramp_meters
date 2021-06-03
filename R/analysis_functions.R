@@ -54,7 +54,7 @@ rmse <- function(x, y){
 #'   - iq_occ
 rmse_kalman <- function(p, df){
   queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = 537)
-  rmse(df$Queue_size, queue)
+  rmse(df$man_q_len, queue)
 }
 
 
@@ -99,3 +99,31 @@ join_correlation_data <- function(group_k, correlation_data){
   left_join(group_k, correlation_data)
   
 }
+
+linear_models <- function(model_data){
+  l <- list()
+  l[["base"]] <- lm(optim_k ~ iq_occ + density, data = model_data)
+  l[["log_density"]] <- lm(optim_k ~ iq_occ + log(density), data = model_data)
+  l[["log_k"]] <- lm(log(optim_k) ~ iq_occ + density, data = model_data)
+  l[["log_density_k"]] <- lm(log(optim_k) ~ iq_occ + log(density), data = model_data)
+  l[["flow"]] <- lm(optim_k ~ flow, data = model_data)
+  
+  
+  l
+}
+
+
+#  models <- list(
+#    "Base" <- lm(optim_k ~ iq_occ + density, data = model_data),
+#    "log_density" <- lm(optim_k ~ iq_occ + log(density), data = model_data),
+#    "log_k" <- lm(log(optim_k) ~ iq_occ + density, data = model_data),
+#    "log_density_k" <- lm(log(optim_k) ~ iq_occ + log(density), data = model_data),
+#    "flow" <- lm(optim_k ~ flow, data = model_data)
+#  )
+
+#modelsummary(models, gof_omit = ".*",
+#             statistic = c("conf.int",
+#                           "s.e. = {std.error}", 
+#                           "t = {statistic}",
+#                           "p = {p.value}"))
+

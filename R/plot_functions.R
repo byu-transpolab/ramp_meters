@@ -24,9 +24,10 @@ plot_optim_default_rmse <- function(group_k){
     scale_color_viridis_c()
 }
 
-#ggplot(model_data, aes(x = optim_k, y = density)) + 
+#ggplot(model_data, aes(x = density, y = optim_k)) + 
 #  geom_point() + 
 #  stat_poly_eq(formula = log(y) ~ x, aes(label = paste(..eq.label..,..rr.label..,sep="~~~")), parse = TRUE) +
-#  geom_smooth(method = "glm", formula = y~x, se = FALSE,
-#              method.args = list(family = gaussian(link = 'log')))
+#  geom_smooth(method="lm",se=FALSE)
+#  #geom_smooth(method = "glm", formula = y ~ x, se = FALSE,
+#  #            method.args = list(family = gaussian(link = 'log')))
 

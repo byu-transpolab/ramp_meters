@@ -92,38 +92,51 @@ group_optimize_k <- function(df){
     )
 }
 
+# Remove outliers
+remove_outliers <- function(group_k){
+  group_k %>%
+    filter(optim_k < 2)
+}
+
 
 #' Join
 #'
-join_correlation_data <- function(group_k, correlation_data){
-  left_join(group_k, correlation_data)
+join_correlation_data <- function(removed_outliers, correlation_data){
+  left_join(removed_outliers, correlation_data)
   
 }
 
+#' Create linear models
+#' 
 linear_models <- function(model_data){
-  l <- list()
-  l[["base"]] <- lm(optim_k ~ iq_occ + density, data = model_data)
-  l[["log_density"]] <- lm(optim_k ~ iq_occ + log(density), data = model_data)
-  l[["log_k"]] <- lm(log(optim_k) ~ iq_occ + density, data = model_data)
-  l[["log_density_k"]] <- lm(log(optim_k) ~ iq_occ + log(density), data = model_data)
-  l[["flow"]] <- lm(optim_k ~ flow, data = model_data)
+#  l <- list()
+#  l[["base"]] <- lm(optim_k ~ iq_occ + density, data = model_data)
+#  l[["log_density"]] <- lm(optim_k ~ iq_occ + log(density), data = model_data)
+#  l[["log_k"]] <- lm(log(optim_k) ~ iq_occ + density, data = model_data)
+#  l[["log_density_k"]] <- lm(log(optim_k) ~ iq_occ + log(density), data = model_data)
+#  l[["flow"]] <- lm(optim_k ~ iq_occ + flow, data = model_data)
+#
+#  l
   
-  
-  l
+  models <- list(
+    "Base" = lm(optim_k ~ iq_occ + density, data = model_data),
+    "log_density" = lm(optim_k ~ iq_occ + log(density), data = model_data),
+    "log_k" = lm(log(optim_k) ~ iq_occ + density, data = model_data),
+    "log_density_k" = lm(log(optim_k) ~ iq_occ + log(density), data = model_data),
+    "flow" = lm(optim_k ~ flow, data = model_data),
+    "flow_log_density_k" = lm(log(optim_k) ~ iq_occ + flow + log(density), data = model_data),
+    "log_meter_rate" = lm(optim_k ~ log(meter_rate_vpm), data = model_data),
+    "log_k_meter_rate" = lm(log(optim_k) ~ log(meter_rate_vpm), data = model_data)
+  )
 }
 
-
-#  models <- list(
-#    "Base" <- lm(optim_k ~ iq_occ + density, data = model_data),
-#    "log_density" <- lm(optim_k ~ iq_occ + log(density), data = model_data),
-#    "log_k" <- lm(log(optim_k) ~ iq_occ + density, data = model_data),
-#    "log_density_k" <- lm(log(optim_k) ~ iq_occ + log(density), data = model_data),
-#    "flow" <- lm(optim_k ~ flow, data = model_data)
-#  )
-
-#modelsummary(models, gof_omit = ".*",
-#             statistic = c("conf.int",
-#                           "s.e. = {std.error}", 
-#                           "t = {statistic}",
-#                           "p = {p.value}"))
-
+#' Create modelsummary table
+#'
+model_summary <- function(linear_models){
+  modelsummary(
+    models, 
+    estimate = "{estimate} ({statistic}){stars}",
+    statistic = NULL, title = "Optim_K Regression Estimates",
+    notes = c("t-statistics in parentheses, * p < 0.1, ** p < 0.05, *** p < 0.01"),
+    escape = FALSE)
+}

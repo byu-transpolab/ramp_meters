@@ -29,7 +29,7 @@ list(
   # data analysis and plotting functions
   tar_target(default_k_rmse, rmse_kalman(0.22, df)),
   tar_target(group_k, group_optimize_k(nested_data)),
-  
+  tar_target(removed_outliers, remove_outliers(group_k)),
 
   # make plot data
   tar_target(plot_data, make_plot_data(group_k)),
@@ -41,11 +41,11 @@ list(
   
   
   # Put correlation data and optimal groupings on the same df
-  tar_target(model_data, join_correlation_data(group_k, correlation_data)), 
+  tar_target(model_data, join_correlation_data(removed_outliers, correlation_data)), 
   
   # make data analysis tables
-  tar_target(data_table, linear_models(model_data))
-#  tar_target(summary_table, model_summary(linear_models))
+  tar_target(linearmodels, linear_models(model_data)),
+  tar_target(modelsummary, model_summary(linearmodels))
   
   
 

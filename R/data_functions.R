@@ -64,6 +64,14 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
     left_join(raw_detector_data, by = c("start_new" = "start_time", "end_new" = "end_time"))
 }
 
+#' Configure ramp properties
+#' 
+ramp_properties <- function(ramp_name, direction, ramp_length, n_lanes){
+  ramp_properties <- matrix(c('Bangerter', 'Layton', 'SB','NB', 1000, 537, 3, 2), ncol = 4) 
+  colnames(ramp_properties) <- c('ramp_name','direction', 'ramp_length','n_lanes')
+  ramp_properties.df <- as.data.frame(ramp_properties)
+}
+
 
 #' Clean the data
 #' 
@@ -73,14 +81,14 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
 clean_data <- function(adjusted_data){
   adjusted_data %>%
     select(start_time, contains("man"),
-           contains("det"), iq_1_occ, iq_2_occ, pq_1_occ, pq_2_occ, meter_rate_vph)  %>%
+           contains("det"), iq_occ_1, iq_occ_2, pq_occ_1, pq_occ_2, meter_rate_vph)  %>%
     mutate(
       v_in = det_eq_1 + det_eq_2 + det_eq_3,
       v_out = det_pq_1 + det_pq_2,
       man_eq_tot = man_eq_1 + man_eq_2 + man_eq_3,
       det_eq_tot = det_eq_1 + det_eq_2 + det_eq_3,
-      iq_occ = (iq_1_occ + iq_2_occ) / 2,
-      pq_occ = (pq_1_occ + pq_2_occ) / 2,
+      iq_occ = (iq_occ_1 + iq_occ_2) / 2,
+      pq_occ = (pq_occ_1 + pq_occ_2) / 2,
       density = man_tot_on_ramp/((537/5280)*2), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
       meter_rate_vpm = meter_rate_vph / 60,
       flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period

@@ -19,16 +19,18 @@ tar_option_set(packages = c("tidyverse", "readxl", "lubridate", "modelsummary"))
 # End this file with a list of target objects.
 list(
   # data cleaning and grouping pipeline
-  tar_target(rampproperties, ramp_properties(ramp_name, direction, ramp_length, n_lanes)),
-  tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx", "data/bangerter_detector.xlsx"))),
-  tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx", "data/bangerter_manual.xlsx"))),
-  tar_target(adjusted_data, adjust_timebins(raw_detector_data, raw_manual_data)),
-  tar_target(df, clean_data(adjusted_data)),
-  tar_target(nested_data, nest_data(df)),
+  tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx", "data/bangerter_detector.xlsx"),
+                                              c("Layton", "Bangerter"))),
+  tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx", "data/bangerter_manual.xlsx"),
+                                            c("Layton", "Bangerter"))),
+  tar_target(adjusted_bgt_data, adjust_timebins(raw_detector_data$Bangerter, raw_manual_data$Bangerter)),
+  tar_target(adjusted_lyt_data, adjust_timebins(raw_detector_data$Layton, raw_manual_data$Layton)),
+  tar_target(df_bgt, clean_data(adjusted_bgt_data)),
+  tar_target(df_lyt, clean_data(adjusted_lyt_data)),
+  tar_target(nested_data, nest_data(list(df_bgt, df_lyt))),
   tar_target(correlation_data, get_correlation_data(nested_data)),
   
   # data analysis and plotting functions
-  tar_target(default_k_rmse, rmse_kalman(0.22, df)),
   tar_target(group_k, group_optimize_k(nested_data)),
   tar_target(removed_outliers, remove_outliers(group_k)),
 

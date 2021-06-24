@@ -9,7 +9,7 @@
 #' @param veh_length Average assumed vehicle length with safety buffer
 #' 
 kalman_filter <- function(v_in, v_out, iq_occ, K = 0.22, C = NA, period_length = 1,
-                          ramp_length, n_lanes = 2, veh_length = 28){
+                          ramp_length, n_lanes, veh_length = 28){
   
   
   # estimate of queue based on density
@@ -53,12 +53,13 @@ rmse <- function(x, y){
 #'   - v_out
 #'   - iq_occ
 rmse_kalman <- function(p, df){
-  queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = 537)
+  queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = df$ramp_length, n_lanes = df$n_lanes)
   rmse(df$man_q_len, queue)
 }
 
 
-rmse022 <- function(df){rmse_kalman(0.22, df)}
+rmse022 <- function(df){
+  rmse_kalman(0.22, df)}
 
 
 #' Find the value of k that minimizes the RMSE between observed and modeled
@@ -69,7 +70,7 @@ find_optimum_k <- function(df){
   # start at the default value of 0.22
   o <- optim(c(0.22), rmse_kalman, df = df)
   
-  q <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = o$par, ramp_length = 537)
+  q <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = o$par, ramp_length = df$ramp_length, n_lanes = df$n_lanes)
   
   list(optim = o, queue = q)
 }
@@ -111,13 +112,12 @@ join_correlation_data <- function(removed_outliers, correlation_data){
 linear_models <- function(model_data){
   models <- list(
     "Base" = lm(optim_k ~ iq_occ + density, data = model_data),
-    "log_density" = lm(optim_k ~ iq_occ + log(density + 1), data = model_data),
-    "log_k" = lm(log(optim_k) ~ iq_occ + density, data = model_data),
-    "log_density_k" = lm(log(optim_k) ~ iq_occ + log(density), data = model_data),
-    "flow" = lm(optim_k ~ flow, data = model_data),
-    "flow_log_density_k" = lm(log(optim_k) ~ iq_occ + flow + log(density), data = model_data),
-    "log_meter_rate" = lm(optim_k ~ log(meter_rate_vpm), data = model_data),
-    "log_k_meter_rate" = lm(log(optim_k) ~ log(meter_rate_vpm), data = model_data)
+    "Log Density" = lm(optim_k ~ iq_occ + log(density + 1), data = model_data),
+    #"log_k" = lm(log(optim_k) ~ iq_occ + density, data = model_data),
+    "Flow" = lm(optim_k ~ iq_occ + log(density + 1) + flow, data = model_data),
+    "Bangerter" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Bangerter")),
+    "Layton" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Layton")),
+    "Ramp Control" = lm(optim_k ~ iq_occ + flow + log(density + 1) + ramp, data = model_data)
   )
 }
 

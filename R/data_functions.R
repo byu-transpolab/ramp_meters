@@ -3,11 +3,19 @@
 #' @param files A vector of paths to excel spreadsheets containing the data we need
 #' @return A tibble with the necessary data
 #'
-read_raw_data <- function(files){
+read_raw_data <- function(files, names){
+  file_names <- tibble(
+    ramp = as.character(1:length(names)),
+    name = names
+  )
+  
   lapply(files, function(f){
     read_excel(f)
   }) %>%
-    bind_rows(.id = "file")
+    bind_rows(.id = "ramp") %>%
+    left_join(file_names, by = "ramp") %>%
+    mutate(ramp = name) %>% select(-name) %>%
+    split(.$ramp)
 }
 
 
@@ -61,15 +69,17 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
       # figure out what the joining is actually doing when shifting the data (does it move the data up or down)
     ) %>% 
     # combine the detector and manual count spreadsheets together
-    left_join(raw_detector_data, by = c("start_new" = "start_time", "end_new" = "end_time"))
+    left_join(raw_detector_data, by = c("ramp", "start_new" = "start_time", "end_new" = "end_time"))
 }
 
 #' Configure ramp properties
 #' 
-ramp_properties <- function(ramp_name, direction, ramp_length, n_lanes){
-  ramp_properties <- matrix(c('Bangerter', 'Layton', 'SB','NB', 1000, 537, 3, 2), ncol = 4) 
-  colnames(ramp_properties) <- c('ramp_name','direction', 'ramp_length','n_lanes')
-  ramp_properties.df <- as.data.frame(ramp_properties)
+ramp_properties <- function(){
+  tribble(
+    ~ramp_name, ~direction, ~ramp_length, ~n_lanes,
+    "Bangerter", "SB", 1000, 3,
+    "Layton", "NB", 537, 2
+    )
 }
 
 
@@ -80,34 +90,36 @@ ramp_properties <- function(ramp_name, direction, ramp_length, n_lanes){
 #' 
 clean_data <- function(adjusted_data){
   adjusted_data %>%
-    select(start_time, contains("man"),
-           contains("det"), iq_occ_1, iq_occ_2, pq_occ_1, pq_occ_2, meter_rate_vph)  %>%
+    select(start_time, contains("man"), ramp, direction, ramp_length, n_lanes,
+           contains("det"), contains("iq_occ"), contains("pq_occ"), meter_rate_vph)  %>%
     mutate(
       v_in = det_eq_1 + det_eq_2 + det_eq_3,
-      v_out = det_pq_1 + det_pq_2,
+      v_out = det_pq_1 + det_pq_2 + det_pq_3,
       man_eq_tot = man_eq_1 + man_eq_2 + man_eq_3,
       det_eq_tot = det_eq_1 + det_eq_2 + det_eq_3,
-      iq_occ = (iq_occ_1 + iq_occ_2) / 2,
-      pq_occ = (pq_occ_1 + pq_occ_2) / 2,
-      density = man_tot_on_ramp/((537/5280)*2), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
+      iq_occ = (iq_occ_1 + iq_occ_2 + iq_occ_3) / n_lanes,
+      pq_occ = (pq_occ_1 + pq_occ_2 + pq_occ_3) / n_lanes,
+      density = man_tot_on_ramp/((ramp_length/5280)*n_lanes), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
       meter_rate_vpm = meter_rate_vph / 60,
       flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period
-    )
+    ) %>%
+  filter(!is.na(det_eq_1))
 }
 
 
 #' Nest the data
 #' 
 #' @param clean_data
-nest_data <- function(clean_data, ...){
-  clean_data %>%
+nest_data <- function(clean_data){
+  
+  bind_rows(clean_data) %>%
     mutate(
       day = lubridate::day(`start_time`),
       hour = lubridate::hour(`start_time`),
       minute = lubridate::minute(`start_time`),
       period = minute %/% 30
     ) %>%
-    group_by(day, hour, period) %>%
+    group_by(ramp, day, hour, period) %>%
     nest() 
 }
 
@@ -149,3 +161,4 @@ density <- function(df){
 flow <- function(df){
   mean(df$flow, na.rm = TRUE)
 }
+

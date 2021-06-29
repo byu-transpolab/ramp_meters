@@ -93,17 +93,10 @@ group_optimize_k <- function(df){
     )
 }
 
-# Remove outliers
-remove_outliers <- function(group_k){
-  group_k %>%
-    filter(optim_k < 2)
-}
-
-
 #' Join
 #'
-join_correlation_data <- function(removed_outliers, correlation_data){
-  left_join(removed_outliers, correlation_data)
+join_correlation_data <- function(group_k, correlation_data){
+  left_join(group_k, correlation_data)
   
 }
 

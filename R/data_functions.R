@@ -47,10 +47,13 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
     sqrt(mean((detector - manual_lag)^2, na.rm = TRUE))
   }  
   
+  det_eq_tot <- raw_detector_data$det_eq_1 + raw_detector_data$det_eq_2 + raw_detector_data$det_eq_3
+  man_eq_tot <- raw_manual_data$man_eq_1 + raw_manual_data$man_eq_2 + raw_manual_data$man_eq_3
+  
   # calculate lead/lag rmse three minutes either direction
   lag_value <- vector()
   for(i in c(-3:3)){
-    lag_value[i+4] <- rmse_lag(raw_detector_data$det_eq_1,raw_manual_data$man_eq_1,i)  
+    lag_value[i+4] <- rmse_lag(det_eq_tot,man_eq_tot,i)  
   }
   # report the best lead/lag  
   correct_lag <- which.min(lag_value) - 4
@@ -120,6 +123,7 @@ nest_data <- function(clean_data){
       period = minute %/% 30
     ) %>%
     group_by(ramp, day, hour, period) %>%
+    filter(n()>=5) %>%
     nest() 
 }
 

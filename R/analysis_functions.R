@@ -53,8 +53,13 @@ rmse <- function(x, y){
 #'   - v_out
 #'   - iq_occ
 rmse_kalman <- function(p, df){
-  queue <- kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = df$ramp_length, n_lanes = df$n_lanes)
+  queue <- kalman_queue(p, df)
   rmse(df$man_q_len, queue)
+}
+
+
+kalman_queue <- function(p, df){
+  kalman_filter(df$v_in, df$v_out, df$iq_occ, K = p[1], ramp_length = df$ramp_length, n_lanes = df$n_lanes)
 }
 
 
@@ -122,5 +127,9 @@ model_summary <- function(linear_models){
     estimate = "{estimate} ({statistic}){stars}",
     statistic = NULL, title = "Optim_K Regression Estimates",
     notes = c("t-statistics in parentheses, * p < 0.1, ** p < 0.05, *** p < 0.01"),
-    escape = FALSE)
+    escape = FALSE
+    
+  )
 }
+
+

@@ -35,6 +35,7 @@ list(
 
   # make plot data
   tar_target(plot_data, make_plot_data(group_k)),
+  tar_target(plot_model, plot_predicted_queues(linearmodels, model_data)),
   # (example) tar_target(AM_plot,make_plot(group_k,"AM")),
   # (example) tar_target(PM_plot,make_plot(group_k,"PM"))
   

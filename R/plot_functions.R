@@ -38,29 +38,33 @@ plot_predicted_queues <- function(linearmodels, model_data){
   pdata <- model_data %>%
     ungroup() %>%
     mutate(
-      estimated_k = predict(linearmodels[['Ramp Control']]), # change which model?
+      model_k = predict(linearmodels[['Ramp Control']]), # change which model?
       # heuristics
       heur_k = case_when(
-        flow > 1200 ~ 0.6,
-        density > 25 ~ 0.8,
+        density > 40 ~ 0,
+        density > 30 & density <= 40 ~ 0.1,
+        flow < 500 ~ .5,
+        flow > 1200 ~ 0.2,
+        flow > 900 & flow <= 1200 ~ 0.15,
         TRUE ~ 0.22
       )
     ) %>%
-    select(ramp, day,  data, optim_k, queue_at_k, estimated_k, heur_k) %>%
+    select(ramp, day,  data, optim_k, queue_at_k, model_k, heur_k) %>%
     mutate(
       timestamp = map(data, function(x) x$start_time),
-      queue_model = map2(estimated_k, data, kalman_queue),
+      queue_model = map2(model_k, data, kalman_queue),
       queue_observed = map(data, function(x) x$man_q_len),
       queue_horowitz = map2(0.22, data, kalman_queue),
       queue_heuristic = map2(heur_k, data, kalman_queue)
     ) %>%
     select(-data) %>%
-    rename(queue_optimal = queue_at_k) %>%
+    rename(queue_optim_k = queue_at_k) %>%
     unnest(cols = c(timestamp, contains("queue"))) %>%
     pivot_longer(cols = contains("queue"), names_to = "Series", values_to = "Queue")
   
-  ggplot(pdata %>% filter(day %in% c(9, 12)), aes(x = timestamp, y = Queue, color = Series)) + 
+  ggplot(pdata %>% filter(day %in% c(14)), aes(x = timestamp, y = Queue, color = Series)) + 
     geom_line() +
     facet_grid(ramp ~ day, scales = "free_x") + theme_bw()
+  
   
 }

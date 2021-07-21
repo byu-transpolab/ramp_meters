@@ -4,9 +4,15 @@ editor_options:
   chunk_output_type: console
 ---
 # Methods
+
+The following packages are used in this project in R.
 ```{r setup}
+library(targets)
 library(tidyverse)
 library(readxl)
+library(lubridate)
+library(modelsummary)
+library(kableExtra)
 library(ggplot2)
 library(ggpmisc)
 library(scales)
@@ -15,8 +21,6 @@ library(dplyr)
 library(devEMF)
 library(zoo)
 ```
-
-
 
 ## Model
 
@@ -30,6 +34,18 @@ q_i = q_{i-1} + c_i + k (\hat{q}_i - q_{i-1})
 
 ## Data
 
-Identified UDOT ramps in different periods
+Three on-ramps to I-15 throughout Davis, Salt Lake, and Utah counties were chosen for data collection and analysis. These ramps include the northbound on-ramp at Layton Parkway in Davis County, the southbound on-ramp at Bangerter Highway in Salt Lake County, and the southbound on-ramp at University Avenue in Utah County. Data were collected during several periods, including August and September 2020, April 2021, and July 2021. 19 days of data were collected at Layton Parkway, while 5 days of data were collected at Bangerter Highway and University Avenue. These ramps were metered only during the PM peak period, with metering taking place between 4:00 - 6:30 PM at Layton Parkway, 3:30 - 5:45 PM at Bangerter Highway, and 4:30 - 6:15 PM at University Avenue. 
 
+There are loop detectors located at three locations on each metered on-ramp to I-15, including at the excessive queue (EQ), which is located shortly after the entrance to each ramp, the intermediate queue (IQ), located roughly in the middle of the on-ramp, and the passage queue (PQ), located directly after the ramp meter signal. These detectors collect both volume and occupancy data and are recorded in 60-second increments. In addition, the variable ramp meter rate (in units of veh/hr) for each minute is included with the detector data. The detector data used in this paper were obtained through UDOT for each data collection period.
 
+The data collected manually was also completed in 60-second increments during the metered period and includes the number of vehicles in each lane at the EQ detector, the queue length at the ramp meter signal, and the total number of other vehicles on the ramp that have not yet reached the queue. The ramp length and the number of lanes at the ramp meter signal were also recorded. 
+
+## Time Stamp Inconsistency
+
+While data were being collected and analyzed, it was discovered that there was a distinct discrepancy in queue length estimates between the field and detector data. For each ramp, the two forms of data appeared to have inconsistent time stamps, causing the data to be shifted from one another, thus significantly reducing the accuracy of the queue length estimates. To accommodate for this discrepancy, a function was created in R to shift the field data either forwards or backwards up to three minutes in either direction based on the minimum root-mean squared error (RMSE) between the total field and detector volumes measured at the EQ detector. Once the field data were shifted to best match the detector data, the two spreadsheets were joined together for ease of analysis.
+
+## Analysis Parameters
+Several parameters were selected to compare the field and detector data for each 60-second increment, such as the average IQ and PQ occupancy on each ramp, the meter rate (in units of veh/min), traffic density (veh/mi/ln), and flow (veh/hr). These parameters were calculated based on the field and detector data.
+
+## Nested Data
+The data were then nested into 30-minute bins to create an optimized K for 30-minute periods rather than a single optimized K for each day. To ensure that the data contained sufficient observations, a filter of requiring greater than or equal to 5 observations per period to be used for analysis.

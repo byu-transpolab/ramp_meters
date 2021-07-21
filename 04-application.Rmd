@@ -12,7 +12,4 @@ ggplot(plot_data %>% mutate(period = str_c(day, hour, period)),
   facet_wrap(~period)
 ```
 
-
-## Example one
-
-## Example two
+## 

@@ -115,7 +115,7 @@ linear_models <- function(model_data){
     "Flow" = lm(optim_k ~ iq_occ + log(density + 1) + flow, data = model_data),
     "Bangerter" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Bangerter")),
     "Layton" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Layton")),
-    "Ramp Control" = lm(optim_k ~ iq_occ + flow + log(density + 1) + ramp, data = model_data)
+    "Ramp Control" = lm(optim_k ~ iq_occ  + log(density + 1) + ramp, data = model_data)
   )
 }
 

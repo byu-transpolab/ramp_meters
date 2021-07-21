@@ -1,4 +1,4 @@
-# Applications
+# Results
 
 Some _significant_ applications are demonstrated in this chapter.
 
@@ -12,4 +12,6 @@ ggplot(plot_data %>% mutate(period = str_c(day, hour, period)),
   facet_wrap(~period)
 ```
 
-## 
+## Linear Regression
+
+## Cluster Analysis / Heuristics

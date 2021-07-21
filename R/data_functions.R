@@ -120,7 +120,7 @@ nest_data <- function(clean_data){
       day = lubridate::day(`start_time`),
       hour = lubridate::hour(`start_time`),
       minute = lubridate::minute(`start_time`),
-      period = minute %/% 30
+      period = minute %/% 15
     ) %>%
     group_by(ramp, day, hour, period) %>%
     filter(n()>=5) %>%

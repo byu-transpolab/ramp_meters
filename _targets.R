@@ -45,7 +45,7 @@ list(
   # make data analysis tables
   tar_target(linearmodels, linear_models(model_data)),
   tar_target(modelsummary, model_summary(linearmodels))
-  
+  #tar_target(plot_rmse, plot_rmse(model_data))
   
 
 )

@@ -2,10 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
-
 *.aux
 *.log
 *.spl
 ramp_meters.Rmd
-
 _targets/
+Optim_K Regression Estimates.png
+optim_k_plot.png
+testplotly.html

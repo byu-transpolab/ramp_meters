@@ -1,28 +1,26 @@
 ---
-title: "Evaluating Ramp Meter Delay in Utah"
+title: "Calibrating Ramp Meter Queue Length Models: Evidence from Utah"
 author:
+  - name: Tanner Daines
+    email: tdaines@byu.edu
+    affiliation: BYU
   - name: Gregory Macfarlane
     email: gregmacfarlane@byu.edu
-    affiliation: Brigham Young University
+    affiliation: BYU
     footnote: 1
-  - name: Bob Example
-    email: bob@example.com
-    affiliation: Brigham Young University
-  - name: Cat Example
-    email: cat@example.com
-    affiliation: Another University
+  - name: Grant Schultz
+    email: gschultz@byu.edu
+    affiliation: BYU
 address:
-  - code: Brigham Young University
-    address: Civil and Environmental Engineering Department, 430 Engineering Building, Provo, Utah 84602
-  - code: Another University
-    address: Some Other Place
+  - code: BYU
+    address: Brigham Young University, Civil and Environmental Engineering Department, 430 Engineering Building, Provo, Utah 84602
 footnote:
   - code: 1
     text: "Corresponding Author"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: article
-journal: "Submitted to Journal"
+journal: "Transportation Research Record"
 bibliography: [book.bib]
 biblio-style: apalike
 link-citations: yes
@@ -31,5 +29,4 @@ abstract: |
 description: "Ramp meter delay in Utah"
 ---
 
-# Introduction {#intro}
 

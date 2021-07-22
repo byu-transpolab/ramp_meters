@@ -33,9 +33,15 @@ old_plot <- function(group_k){
                 method.args = list(family = gaussian(link = 'log')))
 }
 
-
+#' Function to computer predicted queues among multiple models
+#' 
+#' @param linearmodels A list of regression models, including one named `Ramp Control`
+#' @param model_data A tibble with data used to estimate the linear regression models
+#' 
+#' @return A tibble with model prediction data by multiple methods.
+#' 
 predicted_queues <- function(linearmodels, model_data){
-  pdata <- model_data %>%
+  model_data %>%
     ungroup() %>%
     mutate(
       model_k = predict(linearmodels[['Ramp Control']]), # change which model?
@@ -67,39 +73,49 @@ predicted_queues <- function(linearmodels, model_data){
     )
 }
 
-
-plot_predicted_queues <- function(linearmodels, model_data){
+#' Plot predicted queues by multiple models
+#' 
+#' @param pdata A tibble of model predictions created by predicted_queues()
+#' 
+#' @return A ggplot object.
+plot_predicted_queues <- function(pdata){
   
-  ggplot(pdata %>% filter(day %in% c(14)), aes(x = timestamp, y = Queue, color = Series, lty = observed)) + 
+  ggplot(pdata %>% filter(day %in% c(14)), 
+         aes(x = timestamp, y = Queue, color = Series, lty = observed)) + 
     geom_line() +
-    facet_grid(ramp ~ day, scales = "free_x") + theme_bw()
+    scale_linetype_manual("Queue Determination", values = c(5, 1)) +
+    facet_grid(ramp ~ day, scales = "free") + theme_bw()
   
 }
 
-
-plot_clusters <- function(model_data){
+#' Build k-means clusters
+build_clusters <- function(model_data){
   x = model_data$flow
   y = model_data$density
   
+  # standardize x and y
   d <- cbind((x-mean(x))/sd(x), (y-mean(y))/sd(y))
   clusters <- kmeans(d, 5)
   model_data$cluster <- clusters$cluster
   
-cluster_model <- model_data %>% 
-  mutate(
-    density = cut(density, breaks = c(0,10,20,30,40,Inf)),
-    flow = cut(flow, breaks = c(0,500,850,1200,Inf))
-    
-  ) %>%
-  group_by(cluster) %>%
-  summarise(mean_k = mean(optim_k), n = n(), sd = sd(optim_k)) %>%
-  arrange(mean_k)
+  model_data
+}
 
-  plot(x = model_data$density, y = model_data$flow, col = clusters$cluster)
-  legend(x=70,y=1200,c(model_data$cluster),col=cluster_model$cluster,pch=1)
-  
-  ggplot(model_data, aes(x=density, y = flow, col = factor(cluster))) + geom_point()
+#' Estimate the average k by clusters.
+estimate_cluster_k <- function(cluster_data){
+  cluster_data %>% 
+    group_by(cluster) %>%
+    summarise(
+      mean_k = mean(optim_k), n = n(), sd = sd(optim_k),
+      max_density = max(density), min_density = min(density)
+    ) %>%
+    arrange(mean_k)
+}
 
+
+plot_clusters <- function(cluster_data){
+  ggplot(cluster_data, aes(x=density, y = flow, col = factor(cluster))) + 
+    geom_point()
 }
 
 

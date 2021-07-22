@@ -35,7 +35,7 @@ list(
 
   # make plot data
   tar_target(plot_data, make_plot_data(group_k)),
-  tar_target(plot_model, plot_predicted_queues(linearmodels, model_data)),
+  
   # (example) tar_target(AM_plot,make_plot(group_k,"AM")),
   # (example) tar_target(PM_plot,make_plot(group_k,"PM"))
   
@@ -44,7 +44,15 @@ list(
   
   # make data analysis tables
   tar_target(linearmodels, linear_models(model_data)),
-  tar_target(modelsummary, model_summary(linearmodels))
+  tar_target(modelsummary, model_summary(linearmodels)),
+  # cluster analysis
+  tar_target(cluster_data, build_clusters(model_data)),
+  tar_target(cluster_plot, plot_clusters(cluster_data)),
+  tar_target(cluster_estimates, estimate_cluster_k(cluster_data)),
+  
+  tar_target(pdata, predicted_queues(linearmodels, model_data)),
+  tar_target(pdata_plot, plot_predicted_queues(pdata))
+  
   #tar_target(plot_rmse, plot_rmse(model_data))
   
 

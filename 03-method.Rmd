@@ -1,12 +1,7 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Methods
 
 The following packages are used in this project in R.
-```{r setup}
+```{r setup, include = FALSE}
 library(targets)
 library(tidyverse)
 library(readxl)

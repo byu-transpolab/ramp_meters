@@ -1,0 +1,11 @@
+# Acknowledgements {-}
+
+This research was funded by the Utah Department of Transportation. The authors
+alone are responsible for the preparation and accuracy of the information, data,
+analysis, discussions, recommendations, and conclusions presented herein. The
+contents do not necessarily reflect the views, opinions, endorsements, or
+policies of the Utah Department of Transportation or the US Department of
+Transportation. The Utah Department of Transportation makes no representation or
+warranty of any kind, and assumes no liability therefore.
+
+Cory Ward and James Umpress provided indispensible data prepration work.

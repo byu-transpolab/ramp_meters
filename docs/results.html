@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>References | Evaluating Ramp Meter Delay in Utah</title>
+  <title> 4 Results | Evaluating Ramp Meter Delay in Utah</title>
   <meta name="description" content="Ramp meter delay in Utah" />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="References | Evaluating Ramp Meter Delay in Utah" />
+  <meta property="og:title" content=" 4 Results | Evaluating Ramp Meter Delay in Utah" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="References | Evaluating Ramp Meter Delay in Utah" />
+  <meta name="twitter:title" content=" 4 Results | Evaluating Ramp Meter Delay in Utah" />
   
   <meta name="twitter:description" content="Ramp meter delay in Utah" />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="acknowledgements.html"/>
-
+<link rel="prev" href="methods.html"/>
+<link rel="next" href="final-words.html"/>
 <style type="text/css">
 p.abstract{
   text-align: center;
@@ -188,17 +188,35 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="references" class="section level1 unnumbered">
-<h1>References</h1>
+<div id="results" class="section level1" number="4">
+<h1><span class="header-section-number"> 4</span> Results</h1>
+<p>Some <em>significant</em> applications are demonstrated in this chapter.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="results.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(plot_data)</span></code></pre></div>
+<pre><code>## Warning in file_diff_dbl(chr): NAs introduced by coercion</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="results.html#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">str_c</span>(day, hour, period)), </span>
+<span id="cb24-2"><a href="results.html#cb24-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> queue_length, <span class="at">color =</span> name)) <span class="sc">+</span> </span>
+<span id="cb24-3"><a href="results.html#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb24-4"><a href="results.html#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>period)</span></code></pre></div>
+<pre><code>## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?
+## geom_path: Each group consists of only one observation. Do you need to adjust
+## the group aesthetic?</code></pre>
+<p><img src="ramp_meters_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<div id="linear-regression" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Linear Regression</h2>
+</div>
+<div id="cluster-analysis-heuristics" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Cluster Analysis / Heuristics</h2>
 
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="acknowledgements.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="methods.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="final-words.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

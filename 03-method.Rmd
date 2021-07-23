@@ -15,6 +15,8 @@ library(DT)
 library(dplyr)
 library(devEMF)
 library(zoo)
+
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Model

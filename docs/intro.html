@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Evaluating Ramp Meter Delay in Utah</title>
+  <title>Calibrating Ramp Meter Queue Length Models: Evidence from Utah</title>
   <meta name="description" content="Ramp meter delay in Utah" />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Evaluating Ramp Meter Delay in Utah" />
+  <meta property="og:title" content="Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   <meta property="og:type" content="book" />
   
   
@@ -16,14 +16,14 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Evaluating Ramp Meter Delay in Utah" />
+  <meta name="twitter:title" content="Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   
   <meta name="twitter:description" content="Ramp meter delay in Utah" />
   
 
 
 
-<meta name="date" content="2021-07-21" />
+<meta name="date" content="2021-07-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -129,6 +129,28 @@ code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -180,7 +202,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Evaluating Ramp Meter Delay in Utah</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Calibrating Ramp Meter Queue Length Models: Evidence from Utah</a>
           </h1>
         </div>
 
@@ -189,23 +211,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
             <section class="normal" id="section-">
 <div id="header">
-<h1 class="title">Evaluating Ramp Meter Delay in Utah</h1>
+<h1 class="title">Calibrating Ramp Meter Queue Length Models: Evidence from Utah</h1>
+<p class="author" style="margin: 0.5em 0 -0.5em 0;"><em>Tanner Daines</em></p>
+<address class="author_afil">
+BYU<br>
+<a class="author_email" href="mailto:#"><a href="mailto:tdaines@byu.edu" class="email">tdaines@byu.edu</a></a>
+</address>
 <p class="author" style="margin: 0.5em 0 -0.5em 0;"><em>Gregory Macfarlane</em></p>
 <address class="author_afil">
-Brigham Young University<br>
+BYU<br>
 <a class="author_email" href="mailto:#"><a href="mailto:gregmacfarlane@byu.edu" class="email">gregmacfarlane@byu.edu</a></a>
 </address>
-<p class="author" style="margin: 0.5em 0 -0.5em 0;"><em>Bob Example</em></p>
+<p class="author" style="margin: 0.5em 0 -0.5em 0;"><em>Grant Schultz</em></p>
 <address class="author_afil">
-Brigham Young University<br>
-<a class="author_email" href="mailto:#"><a href="mailto:bob@example.com" class="email">bob@example.com</a></a>
+BYU<br>
+<a class="author_email" href="mailto:#"><a href="mailto:gschultz@byu.edu" class="email">gschultz@byu.edu</a></a>
 </address>
-<p class="author" style="margin: 0.5em 0 -0.5em 0;"><em>Cat Example</em></p>
-<address class="author_afil">
-Another University<br>
-<a class="author_email" href="mailto:#"><a href="mailto:cat@example.com" class="email">cat@example.com</a></a>
-</address>
-<p class="date" style="margin-top: 1.5em;"><em>2021-07-21</em></p>
+<p class="date" style="margin-top: 1.5em;"><em>2021-07-22</em></p>
 <div class="abstract">
 <p class="abstract">Abstract</p>
 <p>This is where the abstract should go.</p>

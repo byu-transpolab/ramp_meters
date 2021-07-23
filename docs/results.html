@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title> 4 Results | Evaluating Ramp Meter Delay in Utah</title>
+  <title> 4 Results | Calibrating Ramp Meter Queue Length Models: Evidence from Utah</title>
   <meta name="description" content="Ramp meter delay in Utah" />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content=" 4 Results | Evaluating Ramp Meter Delay in Utah" />
+  <meta property="og:title" content=" 4 Results | Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   <meta property="og:type" content="book" />
   
   
@@ -16,14 +16,14 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content=" 4 Results | Evaluating Ramp Meter Delay in Utah" />
+  <meta name="twitter:title" content=" 4 Results | Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   
   <meta name="twitter:description" content="Ramp meter delay in Utah" />
   
 
 
 
-<meta name="date" content="2021-07-21" />
+<meta name="date" content="2021-07-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -129,6 +129,28 @@ code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -180,7 +202,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Evaluating Ramp Meter Delay in Utah</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Calibrating Ramp Meter Queue Length Models: Evidence from Utah</a>
           </h1>
         </div>
 
@@ -191,16 +213,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="results" class="section level1" number="4">
 <h1><span class="header-section-number"> 4</span> Results</h1>
 <p>Some <em>significant</em> applications are demonstrated in this chapter.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="results.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(plot_data)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="results.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_load</span>(plot_data)</span></code></pre></div>
 <pre><code>## Warning in file_diff_dbl(chr): NAs introduced by coercion</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="results.html#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">str_c</span>(day, hour, period)), </span>
-<span id="cb24-2"><a href="results.html#cb24-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> queue_length, <span class="at">color =</span> name)) <span class="sc">+</span> </span>
-<span id="cb24-3"><a href="results.html#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb24-4"><a href="results.html#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>period)</span></code></pre></div>
-<pre><code>## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?
-## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="results.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">str_c</span>(day, hour, period)), </span>
+<span id="cb3-2"><a href="results.html#cb3-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> queue_length, <span class="at">color =</span> name)) <span class="sc">+</span> </span>
+<span id="cb3-3"><a href="results.html#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb3-4"><a href="results.html#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>period)</span></code></pre></div>
 <p><img src="ramp_meters_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <div id="linear-regression" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> Linear Regression</h2>

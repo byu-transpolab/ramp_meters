@@ -2,13 +2,16 @@
 title: "Calibrating Ramp Meter Queue Length Models: Evidence from Utah"
 author:
   - name: Tanner Daines
+    position: Graduate Student
     email: tdaines@byu.edu
     affiliation: BYU
   - name: Gregory Macfarlane
+    note: Corresponding Author
+    position: Assistant Professor
     email: gregmacfarlane@byu.edu
     affiliation: BYU
-    footnote: 1
   - name: Grant Schultz
+    position: Professor
     email: gschultz@byu.edu
     affiliation: BYU
 address:
@@ -22,11 +25,15 @@ site: bookdown::bookdown_site
 documentclass: article
 journal: "Transportation Research Record"
 bibliography: [book.bib]
-biblio-style: apalike
+biblio-style: unsrtnat
+linenumbers: true
+layout: "3p, review"
 link-citations: yes
 abstract: |
   This is where the abstract should go.
+keywords: ["Transportation", "Travel Behavior"]
 description: "Ramp meter delay in Utah"
+wordcount: 6534
 ---
 
 

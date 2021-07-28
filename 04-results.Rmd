@@ -1,9 +1,55 @@
 # Results
 
-Some _significant_ applications are demonstrated in this chapter.
+Linear regression models were created based on the traffic analysis parameters of occupancy, flow, and density, as seen in Table \@ref(tab:models-summ). This table compares...
+
+```{r models-summ, echo=FALSE}
+tar_load(modelsummary)
+
+model_summary <- function(linear_models){
+  modelsummary(
+    linear_models, 
+    estimate = "{estimate} ({statistic}){stars}",
+    statistic = NULL, title = "Optim_K Regression Estimates",
+    notes = c("t-statistics in parentheses, * p < 0.1, ** p < 0.05, *** p < 0.01"),
+    escape = FALSE
+  )
+}
+```
+
+A cluster analysis was also performed, which compares the flow versus the density for each 15-minute period and then compares the average K for each cluster, as seen in Table \@ref(tab:cluster-analysis-tab) and Figure \@ref(fig:cluster-analysis-fig). It was found that in general, the higher the traffic density, the more accurate the conservation model became, in other words, K began to approach 0. As traffic density decreased on the ramp, K began to increase closer to 1. With this information, a heuristic model can be developed to predict the queue length of vehicles at the metered on-ramp based on the traffic density on the ramp.
+
+```{r cluster-analysis-tab}
+## still need to clean up table to be presentable
+tar_load(cluster_estimates)
+
+estimate_cluster_k <- function(cluster_data){
+  cluster_data %>% 
+    group_by(cluster) %>%
+    summarise(
+      mean_k = mean(optim_k), n = n(), sd = sd(optim_k),
+      max_density = max(density), min_density = min(density)
+    ) %>%
+    arrange(mean_k)
+}
+
+```
+
+```{r cluster-analysis-fig}
+tar_load(cluster_plot)
+
+plot_clusters <- function(cluster_data){
+  ggplot(cluster_data, aes(x=density, y = flow, col = factor(cluster))) + 
+    geom_point()
+}
+
+```
 
 
-```{r}
+```{r pdata_plot, echo=FALSE}
+## still need to figure out how to plot this correctly
+library(targets)
+library(tidyverse)
+library(readxl)
 tar_load(plot_data)
 
 ggplot(plot_data %>% mutate(period = str_c(day, hour, period)), 

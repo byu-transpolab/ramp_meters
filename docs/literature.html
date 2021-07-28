@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title> 2 Literature | Evaluating Ramp Meter Delay in Utah</title>
+  <title> 2 Literature | Calibrating Ramp Meter Queue Length Models: Evidence from Utah</title>
   <meta name="description" content="Ramp meter delay in Utah" />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content=" 2 Literature | Evaluating Ramp Meter Delay in Utah" />
+  <meta property="og:title" content=" 2 Literature | Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   <meta property="og:type" content="book" />
   
   
@@ -16,14 +16,14 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content=" 2 Literature | Evaluating Ramp Meter Delay in Utah" />
+  <meta name="twitter:title" content=" 2 Literature | Calibrating Ramp Meter Queue Length Models: Evidence from Utah" />
   
   <meta name="twitter:description" content="Ramp meter delay in Utah" />
   
 
 
 
-<meta name="date" content="2021-07-21" />
+<meta name="date" content="2021-07-27" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -42,7 +42,6 @@ div.abstract{
   width: 90%;
 }
 </style>
-<script src="libs/header-attrs-2.8/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -60,23 +59,24 @@ div.abstract{
 
 
 
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
 
 
 <style type="text/css">
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -96,7 +96,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -147,25 +147,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <li class="divider"></li>
 <li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
-<li class="chapter" data-level="2" data-path="literature.html"><a href="literature.html"><i class="fa fa-check"></i><b>2</b> Literature</a>
-<ul>
-<li class="chapter" data-level="2.1" data-path="literature.html"><a href="literature.html#add-in-equations-here"><i class="fa fa-check"></i><b>2.1</b> Add in equations here?</a></li>
+<li class="chapter" data-level="2" data-path="literature.html"><a href="literature.html"><i class="fa fa-check"></i><b>2</b> Literature</a><ul>
+<li class="chapter" data-level="2.1" data-path="literature.html"><a href="literature.html#using-a-volume-balancing-ratio"><i class="fa fa-check"></i><b>2.1</b> Using a Volume-Balancing Ratio</a></li>
+<li class="chapter" data-level="2.2" data-path="literature.html"><a href="literature.html#determination-of-k"><i class="fa fa-check"></i><b>2.2</b> Determination of K</a></li>
+<li class="chapter" data-level="2.3" data-path="literature.html"><a href="literature.html#relationship-between-k-and-traffic-analysis-parameters"><i class="fa fa-check"></i><b>2.3</b> Relationship between K and Traffic Analysis Parameters</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>3</b> Methods</a>
-<ul>
-<li class="chapter" data-level="3.1" data-path="methods.html"><a href="methods.html#model"><i class="fa fa-check"></i><b>3.1</b> Model</a></li>
-<li class="chapter" data-level="3.2" data-path="methods.html"><a href="methods.html#data"><i class="fa fa-check"></i><b>3.2</b> Data</a></li>
-<li class="chapter" data-level="3.3" data-path="methods.html"><a href="methods.html#time-stamp-inconsistency"><i class="fa fa-check"></i><b>3.3</b> Time Stamp Inconsistency</a></li>
-<li class="chapter" data-level="3.4" data-path="methods.html"><a href="methods.html#analysis-parameters"><i class="fa fa-check"></i><b>3.4</b> Analysis Parameters</a></li>
-<li class="chapter" data-level="3.5" data-path="methods.html"><a href="methods.html#nested-data"><i class="fa fa-check"></i><b>3.5</b> Nested Data</a></li>
+<li class="chapter" data-level="3" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>3</b> Methods</a><ul>
+<li class="chapter" data-level="3.1" data-path="methods.html"><a href="methods.html#data-collection"><i class="fa fa-check"></i><b>3.1</b> Data Collection</a></li>
+<li class="chapter" data-level="3.2" data-path="methods.html"><a href="methods.html#data-analysis"><i class="fa fa-check"></i><b>3.2</b> Data Analysis</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>4</b> Results</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="results.html"><a href="results.html#linear-regression"><i class="fa fa-check"></i><b>4.1</b> Linear Regression</a></li>
-<li class="chapter" data-level="4.2" data-path="results.html"><a href="results.html#cluster-analysis-heuristics"><i class="fa fa-check"></i><b>4.2</b> Cluster Analysis / Heuristics</a></li>
+<li class="chapter" data-level="4" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>4</b> Applications</a><ul>
+<li class="chapter" data-level="4.1" data-path="applications.html"><a href="applications.html#section"><i class="fa fa-check"></i><b>4.1</b> </a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>5</b> Final Words</a></li>
-<li class="chapter" data-level="6" data-path="final-words-1.html"><a href="final-words-1.html"><i class="fa fa-check"></i><b>6</b> Final Words</a></li>
+<li class="chapter" data-level="5" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>5</b> Results</a><ul>
+<li class="chapter" data-level="5.1" data-path="results.html"><a href="results.html#linear-regression"><i class="fa fa-check"></i><b>5.1</b> Linear Regression</a></li>
+<li class="chapter" data-level="5.2" data-path="results.html"><a href="results.html#cluster-analysis-heuristics"><i class="fa fa-check"></i><b>5.2</b> Cluster Analysis / Heuristics</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>6</b> Final Words</a></li>
+<li class="chapter" data-level="7" data-path="final-words-1.html"><a href="final-words-1.html"><i class="fa fa-check"></i><b>7</b> Final Words</a></li>
 <li class="chapter" data-level="" data-path="acknowledgements.html"><a href="acknowledgements.html"><i class="fa fa-check"></i>Acknowledgements</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -180,7 +179,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Evaluating Ramp Meter Delay in Utah</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Calibrating Ramp Meter Queue Length Models: Evidence from Utah</a>
           </h1>
         </div>
 
@@ -188,17 +187,40 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="literature" class="section level1" number="2">
+<div id="literature" class="section level1">
 <h1><span class="header-section-number"> 2</span> Literature</h1>
-<p>When freeway operations consistently deteriorate during peak hours, ramp meters are often implemented on the on-ramp, thus regulating the flow of vehicles entering the freeway. By controlling the flow of vehicles onto the freeway, motorists can travel in more favorable traffic conditions, which can reduce crashes, improve overall travel time, and lower emissions (Papageorgiou and Kotsialos 2002). Although conditions on the freeway may improve when ramp meters are implemented, this often leads to increased wait time on the on-ramp. Several ramp metering algorithms have been used in an attempt to find a balance between freeway and ramp operations, though much remains to be accomplished; many citizens contend that ramp meters cause more delay than they aim to prevent (Liu et al. 2012). For example, Minnesota implemented ramp meters in 1969, and in the fall of 2000—at the request of citizens in the Minneapolis-St. Paul area—the meters were shut off for eight weeks to analyze whether freeway conditions were superior with the ramp meters (Levinson and Zhang 2004). To the surprise of some traffic analysts, some areas of the Twin Cities showed decreased travel time without the ramp meters, though the results mostly showed that travel delay, average speed, and travel time performed significantly better with the ramp meters in use. Other areas throughout both the United States and the world have shown similar results. In San Diego, a recently implemented ramp metering algorithm reduced travel time by more than four percent (Belisle et al. 2019). The Seattle Bottleneck algorithm, used in many locations, has also reduced crash rates and average travel time (Jacboson et al. 2006). Thus, in order to best understand the benefits of ramp meters, it is imperative that their function be established.</p>
+<p>When freeway operations consistently deteriorate during peak hours, ramp meters are often implemented on the on-ramp, thus regulating the flow of vehicles entering the freeway. By controlling the flow of vehicles onto the freeway, motorists can travel in more favorable traffic conditions, which can reduce crashes, improve overall travel time, and lower emissions <span class="citation">(Papageorgiou and Kotsialos <a href="#ref-papageorgiou2002freeway" role="doc-biblioref">2002</a>)</span>. Although conditions on the freeway may improve when ramp meters are implemented, this often leads to increased wait time on the on-ramp. Several ramp metering algorithms have been used in an attempt to find a balance between freeway and ramp operations, though much remains to be accomplished; many citizens contend that ramp meters cause more delay than they aim to prevent (Liu et al. 2012). For example, Minnesota implemented ramp meters in 1969, and in the fall of 2000—at the request of citizens in the Minneapolis-St. Paul area—the meters were shut off for eight weeks to analyze whether freeway conditions were superior with the ramp meters (Levinson and Zhang 2004). To the surprise of some traffic analysts, some areas of the Twin Cities showed decreased travel time without the ramp meters, though the results mostly showed that travel delay, average speed, and travel time performed significantly better with the ramp meters in use. Other areas throughout both the United States and the world have shown similar results. In San Diego, a recently implemented ramp metering algorithm reduced travel time by more than four percent (Belisle et al. 2019). The Seattle Bottleneck algorithm, used in many locations, has also reduced crash rates and average travel time (Jacboson et al. 2006). Thus, in order to best understand the benefits of ramp meters, it is imperative that their function be established.</p>
 <p>There are two primary classifications of ramp meters: pre-timed meters and traffic-responsive meters (Jacobson et al. 2006). Pre-timed meters operate at a set rate based on historical data; this type of metering has proven effective when traffic volumes are easily predictable. However, when sudden changes in traffic operations occur, pre-timed meters often fail to account for the change without manual intervention. Traffic-responsive metering on the other hand relies on real-time data collection through the use of loop detectors, which can be placed within the pavement or in the form of traffic cameras. Due to the extensive amount of data being collected, the initial calibration of traffic-responsive meters can prove to be time consuming; however, once effectively implemented, they can mitigate congestion based on the data received on the ramp.</p>
-<p>By using loop detectors on the ramps, time occupancy and traffic volume data are gathered. Occupancy refers to the percent of time a point on the road is occupied by a vehicle; for example, if no vehicle passes over the detector during a given time period, the occupancy would be 0 percent, whereas if a vehicle was detected passing over the detector during half of that same time period, the time occupancy would show 50 percent. (Wu et al. 2009). Wu et al. (2009) use the volume and occupancy data from the detectors by comparing three methods of calculating the queue length, including a Kalman filter, a conservation model, and the Highway Capacity Manual (HCM) back of queue method (the HCM method proved to be ineffective, and will not be discussed in detail in this literature review). The original equations developed for the conservation model and Kalman filter algorithms required the volume entering and exiting the ramp to be equal, but through analysis, they found that the detectors introduced error when compared with field recorded traffic volumes.</p>
-<p>Many difficulties are introduced when relying solely on the detector data, particularly that vehicles can be double-counted or missed altogether (Wu et al. 2008). Because of this potential for error, the original conservation model equation and Kalman filter equation were modified to balance the volumes entering and exiting the ramp, which is shown by a volume-balancing ratio (C) in each equation. Equation 1 is the conservation model equation with the volume-balancing ratio included, and Equation 2 and Equation 3 are the equations used for the Kalman filter method with the volume-balancing ratio.</p>
-<div id="add-in-equations-here" class="section level2" number="2.1">
-<h2><span class="header-section-number">2.1</span> Add in equations here?</h2>
-<p>Using the volume-balancing ratio previously mentioned, it is presumed the conservation model and Kalman filter algorithms will produce more accurate queue length estimates, which can then be used to calculate the expected vehicle wait time. Wu et al. (2009) explain that the volume-balancing ratio may be set as a constant value or may be calculated in real time. Prior to incorporating this volume-balancing ratio, when Wu et al. (2009) utilized Equation 2 to find the queue length estimate based on the occupancy data, they found the correlation between the estimated queue length and the time occupancy to be only 0.63. This research also concluded that the relationship between volume data from the detector and the estimated number of vehicles is nonlinear, as the results gave a correlation coefficient of merely 0.18 between the two variables. Therefore, it is likely there are other factors outside the capability of this equation that affect the queue length such as detector error, driver distraction, poor weather, and traffic incidents.</p>
-<p>However, in analyzing 20 data sets from ramp meters in Milwaukee, Wisconsin, Wu et al. (2009) found that the volume-balancing ratio improved both the Kalman filter and the conservation models considerably in nearly all cases, and in only a select few cases were slightly more errors introduced. These errors were found to occur in the Kalman filter models because when the volume-balancing ratio is close to 1 (the detector volume entering and exiting the ramp are nearly equal), the Kalman filter coefficient K is also close to zero, but the equation still adds queue length to the estimate from the coefficient K, which would introduce additional error. In contrast, when the volume-balancing ratio is not close to 1, the Kalman filter equation yield more reliable results than the conservation model. Overall, both the Kalman filter and conservation model, especially when using the volume-balancing ratio, provide generally accurate estimates of the actual queue length, which can then be used to predict the expected wait time on the freeway entrance ramp.</p>
+<p>By using loop detectors on the ramps, time occupancy and traffic volume data are gathered. Occupancy refers to the percent of time a point on the road is occupied by a vehicle; for example, if no vehicle passes over the detector during a given time period, the occupancy would be 0 percent, whereas if a vehicle was detected passing over the detector during half of that same time period, the time occupancy would show 50 percent. Several studies have been done previously to use the data gathered by loop detectors to estimate the queue length on metered on-ramps. Vigos et al.(2006), Liu et al. (2007), and <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> (2009) utilize the loop detector data to estimate queue length with two proposed methods, including a conservation model and a Kalman filter model. The conservation model assumes that the number of vehicles detected to be entering and exiting the vehicles throughout a given time period is the same. The Kalman filter model is based on the conservation model, but uses additional ramp characteristics and a Kalman filter coefficient “K” to improve the queue length estimate provided by the conservation model. Wu et al. (2009) also use the Highway Capacity Manual (HCM) back of queue method, however it proved to be ineffective, and will not be discussed in detail in this literature review. The original equations developed for the conservation model and Kalman filter algorithms required the volume entering and exiting the ramp to be equal, but through analysis of the data, Wu et al. (2009) found that the detectors introduced error when compared with field recorded traffic volumes.</p>
+<div id="using-a-volume-balancing-ratio" class="section level2">
+<h2><span class="header-section-number">2.1</span> Using a Volume-Balancing Ratio</h2>
+<p>Many difficulties are introduced when relying solely on the detector data, particularly that vehicles can be double-counted or missed altogether (Wu et al. 2008). Because of this potential for error, the original conservation model equation and Kalman filter equation were modified by Wu et al. to balance the volumes entering and exiting the ramp, which is shown by a volume-balancing ratio “C” in each equation. Equation 1 is the conservation model equation with the volume-balancing ratio included, and Equation 2 and Equation 3 are the equations used for the Kalman filter method with the volume-balancing ratio.</p>
+<p>The Kalman filter model applied by <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> is as follows:</p>
+<p><span class="math display" id="eq:kalman">\[\begin{equation}
+q_i = q_{i-1} + c_i + k (\hat{q}_i - q_{i-1})
+  \tag{2.1}
+\end{equation}\]</span></p>
+<p>Using the volume-balancing ratio previously mentioned, it is presumed the conservation model and Kalman filter algorithms will produce more accurate queue length estimates, which can then be used to calculate the expected vehicle wait time. <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> explain that the volume-balancing ratio may be set as a constant value or may be calculated in real time. Prior to incorporating this volume-balancing ratio, when <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> utilized Equation 2 to find the queue length estimate based on the occupancy data, they found the correlation between the estimated queue length and the time occupancy to be only 0.63. This research also concluded that the relationship between volume data from the detector and the estimated number of vehicles is nonlinear, as the results gave a correlation coefficient of merely 0.18 between the two variables. Therefore, it is likely there are other factors outside the capability of this equation that affect the queue length such as detector error, driver distraction, poor weather, and traffic incidents.</p>
+<p>However, in analyzing 20 data sets from ramp meters in Milwaukee, Wisconsin, <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> found that the volume-balancing ratio improved both the Kalman filter and the conservation models considerably in nearly all cases, and in only a select few cases were slightly more errors introduced. These errors were found to occur in the Kalman filter models because when the volume-balancing ratio is close to 1 (the detector volume entering and exiting the ramp are nearly equal), the Kalman filter coefficient K is also close to zero, but the equation still adds queue length to the estimate from the coefficient K, which would introduce additional error. In contrast, when the volume-balancing ratio is not close to 1, the Kalman filter equation yield more reliable results than the conservation model. Overall, <span class="citation">Wu et al. (<a href="#ref-wu2009experiment" role="doc-biblioref">2009</a>)</span> found that both the Kalman filter and conservation model, especially when using the volume-balancing ratio, provide generally accurate estimates of the actual queue length.</p>
+</div>
+<div id="determination-of-k" class="section level2">
+<h2><span class="header-section-number">2.2</span> Determination of K</h2>
+<p>The research previously done on estimating the queue length on on-ramps using a Kalman filtering method has yielded varied and generally inconclusive results with respect to which value of K should be used at any given on-ramp, especially for real-time estimation. Vigos et al. (2006) was of the first to use the Kalman filtering equation to estimate the queue length at metered on-ramps. The estimation for this research was done using microscopic simulation, and it concluded that while K ranged from [0.1, 0.25] in their analysis, the optimum value to be used for K is “0.22 for one detector and 0.5 for all other detector numbers.” However, no field testing was performed in this analysis. Liu et al. (2007) appears to have used a linear regression model to calculate K by using the passage and queue occupancy, and they concluded that the Kalman filter yielded the most accurate results for ramps that were determined to have significant error (larger than 2%) between the volume detected by queue and passage detectors. Finally, Wu et al. (2009) proposed calculating K by minimizing the RMSE between the field-collected queue length and the estimated queue length with the Kalman filter for each peak period at each ramp. Wu et al. (2009) again confirm that the Kalman filter outperforms the conservation model when there is significant error between the queue and passage detectors, because the Kalman filter model can correct itself. Wu et al. (2009) confirm that the Kalman filter coefficient would require significant calibration for each ramp metering location and for each peak period. Thus, manually collected data would be required for each additional ramp that is desired to be studied, which limits the feasibility of using the Kalman filter in real-time.</p>
+</div>
+<div id="relationship-between-k-and-traffic-analysis-parameters" class="section level2">
+<h2><span class="header-section-number">2.3</span> Relationship between K and Traffic Analysis Parameters</h2>
+<p>This paper will seek to expound on previously performed research by finding ways the Kalman filter coefficient K can be correlated with various traffic analysis parameters that can be calculated directly from the detector data. If a reliable correlation between these parameters and K can be found, the queue length can then calculated in real time with the Kalman filter equation.</p>
+<p>Each metered on-ramp in Utah has three detector locations in each lane. These detectors include at the excessive queue (EQ), which is located shortly after the entrance to each ramp, the intermediate queue (IQ), located roughly in the middle of the on-ramp, and the passage queue (PQ), located directly after the ramp meter signal. Both volume and occupancy data are collected by these detectors in 60-second increments at each of these locations. The variable ramp metering rate is also updated every 60 seconds. The length of the ramp and number of lanes on the ramp are also known by observation. Using these data, additional traffic analysis parameters such as the traffic density (in units of veh/mi/ln) and flow (in units of veh/hr) can be calculated.</p>
 
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-papageorgiou2002freeway">
+<p>Papageorgiou, Markos, and Apostolos Kotsialos. 2002. “Freeway Ramp Metering: An Overview.” <em>IEEE Transactions on Intelligent Transportation Systems</em> 3 (4): 271–81.</p>
+</div>
+<div id="ref-wu2009experiment">
+<p>Wu, Jingcheng, Xia Jin, Alan J Horowitz, and Daqing Gong. 2009. “Experiment to Improve Estimation of Vehicle Queue Length at Metered on-Ramps.” <em>Transportation Research Record</em> 2099 (1): 30–38.</p>
 </div>
 </div>
             </section>

@@ -47,11 +47,11 @@ predicted_queues <- function(linearmodels, model_data){
       model_k = predict(linearmodels[['Ramp Control']]), # change which model?
       # heuristics
       heur_k = case_when(
-        density > 40 ~ 0,
+        density > 50 ~ 0,
         density > 30 & density <= 40 ~ 0.1,
-        flow < 500 ~ .5,
-        flow > 1200 ~ 0.2,
-        flow > 900 & flow <= 1200 ~ 0.15,
+        density > 20 & density <= 30 ~ 0.2,
+        density > 10 & density <= 20 ~ 0.3,
+        density > 0 & density <= 10 ~ 0.4,
         TRUE ~ 0.22
       )
     ) %>%

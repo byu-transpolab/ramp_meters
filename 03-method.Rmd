@@ -2,6 +2,24 @@
 
 This section will describe the methodology used in collecting and analyzing the data used in this paper. The ramps used for analysis and the metering period will be explained, and the data collected in the field and by the detectors will also be discussed.
 
+```{r setup, echo=FALSE, include = FALSE}
+library(targets)
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(modelsummary)
+library(kableExtra)
+library(ggplot2)
+library(ggpmisc)
+library(scales)
+library(DT)
+library(dplyr)
+library(devEMF)
+library(zoo)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
 ## Data Collection
 
 Two on-ramps to I-15 in Davis and Salt Lake counties in Utah were chosen for data collection and analysis. These ramps include the northbound on-ramp at Layton Parkway in Davis County and the southbound on-ramp at Bangerter Highway in Salt Lake County. Data were collected during several periods, including August and September 2020, and April 2021. At Layton Parkway, 19 days of data were collected, while 5 days of data were collected at Bangerter Highway. These ramps were metered only during the PM peak period, with metering taking place between 4:00 - 6:30 PM at Layton Parkway and 3:30 - 5:45 PM at Bangerter Highway. 

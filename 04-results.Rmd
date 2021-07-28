@@ -1,6 +1,6 @@
 # Results
 
-Linear regression models were created based on the traffic analysis parameters of occupancy, flow, and density, as seen in Table \@ref(tab:models-summ). This table compares...
+Linear regression models were created based on the traffic analysis parameters of occupancy, flow, and density, as seen in Table \@ref(tab:models-summ). This table compares..
 
 ```{r models-summ, echo=FALSE}
 tar_load(modelsummary)

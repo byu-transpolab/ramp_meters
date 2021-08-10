@@ -94,19 +94,22 @@ ramp_properties <- function(){
 clean_data <- function(adjusted_data){
   adjusted_data %>%
     select(start_time, contains("man"), ramp, direction, ramp_length, n_lanes,
-           contains("det"), contains("iq_occ"), contains("pq_occ"), meter_rate_vph)  %>%
+           contains("det"), contains("eq_occ"), contains("iq_occ"), contains("pq_occ"), meter_rate_vph)  %>%
     mutate(
       v_in = det_eq_1 + det_eq_2 + det_eq_3,
       v_out = det_pq_1 + det_pq_2 + det_pq_3,
       man_eq_tot = man_eq_1 + man_eq_2 + man_eq_3,
       det_eq_tot = det_eq_1 + det_eq_2 + det_eq_3,
+      eq_occ = (eq_occ_1 + eq_occ_2 + eq_occ_3) / n_lanes,
       iq_occ = (iq_occ_1 + iq_occ_2 + iq_occ_3) / n_lanes,
       pq_occ = (pq_occ_1 + pq_occ_2 + pq_occ_3) / n_lanes,
-      density = man_tot_on_ramp/((ramp_length/5280)*n_lanes), # Total veh on ramp divided by (ramp length (mi) * number of lanes)
+      man_density = (man_tot_on_ramp/(ramp_length/5280))/n_lanes, # Total veh on ramp divided by (ramp length (mi) * number of lanes)
+      density_sum = ((((eq_occ + iq_occ + pq_occ)/100))*5280)/(20*n_lanes), # Total occupancy added up on ramp to find density
+      density = (((((((eq_occ + iq_occ + pq_occ)/(3)) + (eq_occ + iq_occ + pq_occ)/1)))/(2*100))*5280)/(20*n_lanes), # Averaged occupancy on ramp to find density
       meter_rate_vpm = meter_rate_vph / 60,
-      flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period
+      flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period (units of vph)
     ) %>%
-  filter(!is.na(det_eq_1))
+    filter(!is.na(det_eq_1))
 }
 
 
@@ -120,7 +123,7 @@ nest_data <- function(clean_data){
       day = lubridate::day(`start_time`),
       hour = lubridate::hour(`start_time`),
       minute = lubridate::minute(`start_time`),
-      period = minute %/% 15
+      period = minute %/% 30
     ) %>%
     group_by(ramp, day, hour, period) %>%
     filter(n()>=5) %>%
@@ -137,13 +140,23 @@ get_correlation_data <- function(nested_data) {
   nested_data %>%
     mutate(
       iq_occ = map_dbl(data, iq_occ),
+      eq_occ = map_dbl(data, eq_occ),
       pq_occ = map_dbl(data, pq_occ),
       meter_rate_vpm = map_dbl(data, meter_rate_vpm),
       density = map_dbl(data, density),
+      med_density = map_dbl(data, med_density),
+      sd_density = map_dbl(data, sd_density),
+      density_85 = map_dbl(data, density_85),
+      min_density = map_dbl(data, min_density),
+      max_density = map_dbl(data, max_density),
       flow = map_dbl(data, flow)
     ) %>% 
     select(-data)
   
+}
+
+eq_occ <- function(df){
+  mean(df$eq_occ, na.rm = TRUE)
 }
 
 iq_occ <- function(df){
@@ -160,6 +173,26 @@ meter_rate_vpm <- function(df){
 
 density <- function(df){
   mean(df$density, na.rm = TRUE)
+}
+
+med_density <- function(df){
+  median(df$density, na.rm = TRUE)
+}
+
+sd_density <- function(df){
+  sd(df$density, na.rm = TRUE)
+}
+
+density_85 <- function(df){
+  quantile(df$density, c(.85), na.rm = TRUE)
+}
+
+max_density <- function(df){
+  max(df$density, na.rm = TRUE)
+}
+
+min_density <- function(df){
+  min(df$density, na.rm = TRUE)
 }
 
 flow <- function(df){

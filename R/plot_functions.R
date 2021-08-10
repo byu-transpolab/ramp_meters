@@ -24,14 +24,6 @@ plot_optim_default_rmse <- function(group_k){
     scale_color_viridis_c()
 }
 
-old_plot <- function(group_k){
-  ggplot(model_data, aes(x = density, y = optim_k, color = ramp, fill = factor(ramp))) + 
-    geom_point() + 
-    stat_poly_eq(formula = log(y) ~ x, aes(label = paste(..eq.label..,..rr.label..,sep="~~~")), parse = TRUE) +
-    #geom_smooth(method="lm",se=FALSE)
-    geom_smooth(method = "glm", formula = y ~ x, se = FALSE,
-                method.args = list(family = gaussian(link = 'log')))
-}
 
 #' Function to computer predicted queues among multiple models
 #' 
@@ -90,13 +82,15 @@ plot_predicted_queues <- function(pdata){
 
 #' Build k-means clusters
 build_clusters <- function(model_data){
-  x = model_data$flow
-  y = model_data$density
+  
+  x = model_data$iq_occ
+  y = model_data$pq_occ
+  z = model_data$eq_occ
   
   # standardize x and y
-  d <- cbind((x-mean(x))/sd(x), (y-mean(y))/sd(y))
-  clusters <- kmeans(d, 5)
-  model_data$cluster <- clusters$cluster
+  d <- cbind((x-mean(x))/sd(x), (y-mean(y))/sd(y)) #, (z-mean(z))/sd(z))
+  clusters <- kmeans(d, 3)
+  model_data$cluster <- clusters$cluster 
   
   model_data
 }
@@ -107,14 +101,15 @@ estimate_cluster_k <- function(cluster_data){
     group_by(cluster) %>%
     summarise(
       mean_k = mean(optim_k), n = n(), sd = sd(optim_k),
-      max_density = max(density), min_density = min(density)
+      max_pq_occ = max(pq_occ), min_pq_occ = min(pq_occ)
     ) %>%
     arrange(mean_k)
 }
 
 
 plot_clusters <- function(cluster_data){
-  ggplot(cluster_data, aes(x=density, y = flow, col = factor(cluster))) + 
+  ggplot(cluster_data, 
+         aes(x=iq_occ, y = pq_occ, col = factor(cluster), shape = factor(ramp))) + 
     geom_point()
 }
 

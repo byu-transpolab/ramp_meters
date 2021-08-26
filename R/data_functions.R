@@ -82,7 +82,7 @@ ramp_properties <- function(){
     ~ramp_name, ~direction, ~ramp_length, ~n_lanes,
     "Bangerter", "SB", 1000, 3,
     "Layton", "NB", 537, 2
-    )
+  )
 }
 
 
@@ -104,8 +104,7 @@ clean_data <- function(adjusted_data){
       iq_occ = (iq_occ_1 + iq_occ_2 + iq_occ_3) / n_lanes,
       pq_occ = (pq_occ_1 + pq_occ_2 + pq_occ_3) / n_lanes,
       man_density = (man_tot_on_ramp/(ramp_length/5280))/n_lanes, # Total veh on ramp divided by (ramp length (mi) * number of lanes)
-      density_sum = ((((eq_occ + iq_occ + pq_occ)/100))*5280)/(20*n_lanes), # Total occupancy added up on ramp to find density
-      density = (((((((eq_occ + iq_occ + pq_occ)/(3)) + (eq_occ + iq_occ + pq_occ)/1)))/(2*100))*5280)/(20*n_lanes), # Averaged occupancy on ramp to find density
+      density = (((((((eq_occ + iq_occ + pq_occ)/(3)) + (eq_occ + iq_occ + pq_occ)/1)))/(2*100))*5280)/(20*n_lanes),
       meter_rate_vpm = meter_rate_vph / 60,
       flow = v_out * (60/1) # Total vehicles exiting the ramp times (60min/1hr) divided by 1 min period (units of vph)
     ) %>%
@@ -116,16 +115,17 @@ clean_data <- function(adjusted_data){
 #' Nest the data
 #' 
 #' @param clean_data
-nest_data <- function(clean_data){
+nest_data <- function(clean_data, bin_length = 15){
   
   bind_rows(clean_data) %>%
     mutate(
       day = lubridate::day(`start_time`),
+      month = lubridate::month(`start_time`),
       hour = lubridate::hour(`start_time`),
       minute = lubridate::minute(`start_time`),
-      period = minute %/% 30
+      period = minute %/% bin_length
     ) %>%
-    group_by(ramp, day, hour, period) %>%
+    group_by(ramp, month, day, hour, period) %>%
     filter(n()>=5) %>%
     nest() 
 }

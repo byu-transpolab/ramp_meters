@@ -16,6 +16,11 @@ source("R/plot_functions.R")
 # Set target-specific options such as packages.
 tar_option_set(packages = c("tidyverse", "readxl", "lubridate", "modelsummary", "kableExtra"))
 
+# debugging:  uncomment tar_option_set with the name of the target to debug
+# Then run tar_make with callr_function = NULL
+# tar_option_set(debug = "adjusted_univ_data") # uncomment to debug
+# tar_make(callr_function = NULL) # leave commented! run this in your console
+
 # End this file with a list of target objects.
 list(
   # data cleaning and grouping pipeline

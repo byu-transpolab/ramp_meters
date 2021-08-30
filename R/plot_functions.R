@@ -24,14 +24,6 @@ plot_optim_default_rmse <- function(group_k){
     scale_color_viridis_c()
 }
 
-old_plot <- function(group_k){
-  ggplot(model_data, aes(x = density, y = optim_k, color = ramp, fill = factor(ramp))) + 
-    geom_point() + 
-    stat_poly_eq(formula = log(y) ~ x, aes(label = paste(..eq.label..,..rr.label..,sep="~~~")), parse = TRUE) +
-    #geom_smooth(method="lm",se=FALSE)
-    geom_smooth(method = "glm", formula = y ~ x, se = FALSE,
-                method.args = list(family = gaussian(link = 'log')))
-}
 
 #' Function to computer predicted queues among multiple models
 #' 
@@ -46,23 +38,35 @@ predicted_queues <- function(linearmodels, model_data){
     mutate(
       model_k = predict(linearmodels[['Ramp Control']]), # change which model?
       # heuristics
-      heur_k = case_when(
-        density > 50 ~ 0,
-        density > 30 & density <= 40 ~ 0.1,
-        density > 20 & density <= 30 ~ 0.2,
-        density > 10 & density <= 20 ~ 0.3,
-        density > 0 & density <= 10 ~ 0.4,
+      heur_k15 = case_when(
+        iq_occ > 10 ~ 0.40,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.19,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.36,
+        TRUE ~ 0.22
+      ),
+      heur_k30 = case_when(
+        iq_occ > 10 ~ 0.17,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.15,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.36,
+        TRUE ~ 0.22
+      ),
+      heur_k60 = case_when(
+        iq_occ > 10 ~ 0.14,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.09,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.33,
         TRUE ~ 0.22
       )
     ) %>%
-    select(ramp, day,  data, optim_k, queue_at_k, model_k, heur_k, meter_rate_vpm, density, flow) %>%
+    select(ramp, day, month, data, optim_k, queue_at_k, model_k, heur_k15, heur_k30, heur_k60) %>%
     mutate(
       timestamp = map(data, function(x) x$start_time),
       queue_model = map2(model_k, data, kalman_queue),
       queue_observed = map(data, function(x) x$man_q_len),
-      queue_horowitz = map2(0.22, data, kalman_queue),
+      queue_022 = map2(0.22, data, kalman_queue),
       queue_conservation = map2(0, data, kalman_queue),
-      queue_heuristic = map2(heur_k, data, kalman_queue)
+      queue_heuristic15 = map2(heur_k15, data, kalman_queue),
+      queue_heuristic30 = map2(heur_k30, data, kalman_queue),
+      queue_heuristic60 = map2(heur_k60, data, kalman_queue)
     ) %>%
     select(-data) %>%
     rename(queue_optim_k = queue_at_k) %>%
@@ -80,9 +84,11 @@ predicted_queues <- function(linearmodels, model_data){
 #' @return A ggplot object.
 plot_predicted_queues <- function(pdata){
   
-  ggplot(pdata %>% filter(day %in% c(14)), 
-         aes(x = timestamp, y = Queue, color = Series, lty = observed)) + 
-    geom_line() +
+  ggplot(pdata %>% filter(day %in% c(29) & month %in% c(7)), 
+         aes(x = timestamp, y = Queue, color = Series)) + 
+    geom_line(aes(size = Series)) +
+    scale_color_manual(values = c("black","purple","blue","orange","cyan","green","red","gray")) + 
+    scale_size_manual(values = c(0.1,0.1,0.1,0.1,0.1,0.1,1.0,0.1)) +
     scale_linetype_manual("Queue Determination", values = c(5, 1)) +
     facet_grid(ramp ~ day, scales = "free") + theme_bw()
   
@@ -90,13 +96,15 @@ plot_predicted_queues <- function(pdata){
 
 #' Build k-means clusters
 build_clusters <- function(model_data){
-  x = model_data$flow
-  y = model_data$density
+  
+  x = model_data$iq_occ
+  y = model_data$pq_occ
+  z = model_data$eq_occ
   
   # standardize x and y
-  d <- cbind((x-mean(x))/sd(x), (y-mean(y))/sd(y))
-  clusters <- kmeans(d, 5)
-  model_data$cluster <- clusters$cluster
+  d <- cbind((x-mean(x))/sd(x), (y-mean(y))/sd(y)) #, (z-mean(z))/sd(z))
+  clusters <- kmeans(d, 3)
+  model_data$cluster <- clusters$cluster 
   
   model_data
 }
@@ -107,29 +115,35 @@ estimate_cluster_k <- function(cluster_data){
     group_by(cluster) %>%
     summarise(
       mean_k = mean(optim_k), n = n(), sd = sd(optim_k),
-      max_density = max(density), min_density = min(density)
+      max_pq_occ = max(pq_occ), min_pq_occ = min(pq_occ)
     ) %>%
     arrange(mean_k)
 }
 
 
 plot_clusters <- function(cluster_data){
-  ggplot(cluster_data, aes(x=density, y = flow, col = factor(cluster))) + 
+  ggplot(cluster_data, 
+         aes(x=iq_occ, y = pq_occ, col = factor(cluster), shape = factor(ramp))) + 
     geom_point()
 }
 
 
-plot_rmse <- function(rmse, predicted_queues){
-
-  #create rmse for each model (still need to figure out how to create columns of each queue estimate -
-  # should I do it within the same predicted_queues function?)
-  rmse_conservation = rmse(predicted_queues$queue_observed, predicted_queues$queue_conservation)
-  rmse_heuristic = rmse(predicted_queues$queue_observed, predicted_queues$queue_heuristic)
-  rmse_horowitz = rmse(predicted_queues$queue_observed, predicted_queues$queue_horowitz)
-  rmse_model = rmse(predicted_queues$queue_observed, predicted_queues$queue_model)
-  rmse_optim_k = rmse(predicted_queues$queue_observed, predicted_queues$queue_optim_k)
-
-  #plot/report rmse results
+rmse_data <- function(pdata){
+  new <- pdata %>%
+    select(-observed) %>%
+    pivot_wider(names_from = Series, values_from = Queue) %>%
+    select(ramp, day, timestamp, contains("queue"))
+  l <- list()
+  l[["Conservation"]] <- rmse(new$queue_conservation, new$queue_observed)
+  l[["Heuristic_15"]] <- rmse(new$queue_heuristic15, new$queue_observed)
+  l[["Heuristic_30"]] <- rmse(new$queue_heuristic30, new$queue_observed)
+  l[["Heuristic_60"]] <- rmse(new$queue_heuristic60, new$queue_observed)
+  l[["0.22"]] <- rmse(new$queue_022, new$queue_observed)
+  l[["Linear Model"]] <- rmse(new$queue_model, new$queue_observed)
+  l[["Optim_K"]] <- rmse(new$queue_optim_k, new$queue_observed)
   
-  
+  l %>%
+    bind_rows(.id = "Models") %>%
+    pivot_longer(cols = everything(), names_to = "Models", values_to = "RMSE") %>%
+    arrange(RMSE)
 }

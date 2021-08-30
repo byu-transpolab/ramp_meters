@@ -9,7 +9,7 @@
 #' @param veh_length Average assumed vehicle length with safety buffer
 #' 
 kalman_filter <- function(v_in, v_out, iq_occ, K = 0.22, C = NA, period_length = 1,
-                          ramp_length, n_lanes, veh_length = 28){
+                          ramp_length, n_lanes, veh_length = 24){
   
   
   # estimate of queue based on density
@@ -109,13 +109,22 @@ join_correlation_data <- function(group_k, correlation_data){
 #' 
 linear_models <- function(model_data){
   models <- list(
-    "Base" = lm(optim_k ~ iq_occ + density, data = model_data),
-    "Log Density" = lm(optim_k ~ iq_occ + log(density + 1), data = model_data),
+    #"Base" = lm(optim_k ~ iq_occ + density, data = model_data),
+    #"Log Density" = lm(optim_k ~ iq_occ + log(density + 1), data = model_data),
     #"log_k" = lm(log(optim_k) ~ iq_occ + density, data = model_data),
-    "Flow" = lm(optim_k ~ iq_occ + log(density + 1) + flow, data = model_data),
+    #"Flow" = lm(optim_k ~ iq_occ + log(density + 1) + flow, data = model_data),
     #"Bangerter" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Bangerter")),
     #"Layton" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Layton")),
-    "Ramp Control" = lm(optim_k ~ iq_occ  + log(density + 1) + ramp, data = model_data)
+    "Ramp Control" = lm(optim_k ~ iq_occ  + log(density + 1) + ramp, data = model_data),
+    #"Mean" = lm(optim_k ~ iq_occ  + log(density + 1) , data = model_data),
+    #"85th %" = lm(optim_k ~ iq_occ  + log(density_85 + 1) , data = model_data),
+    #"Median" = lm(optim_k ~ iq_occ  + log(med_density + 1) , data = model_data),
+    #"SD" = lm(optim_k ~ iq_occ  + log(sd_density + 1) , data = model_data),
+    #"Minimum" = lm(optim_k ~ iq_occ  + log(min_density + 1) , data = model_data),
+    #"Maximum" = lm(optim_k ~ iq_occ  + log(max_density + 1) , data = model_data),
+    "New Ramp Control" = lm(optim_k ~ iq_occ  + eq_occ + pq_occ + ramp, data = model_data),
+    "Log Occ" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01) + ramp, data = model_data),
+    "Log Occ no ramp" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01), data = model_data)
   )
 }
 

@@ -39,21 +39,21 @@ predicted_queues <- function(linearmodels, model_data){
       model_k = predict(linearmodels[['Ramp Control']]), # change which model?
       # heuristics
       heur_k15 = case_when(
-        iq_occ > 10 ~ 0.34,
-        iq_occ <= 10 & pq_occ > 10.5 ~ 0.21,
-        iq_occ <= 10 & pq_occ <= 10.5 ~ 0.35,
+        iq_occ > 10 ~ 0.40,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.19,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.36,
         TRUE ~ 0.22
       ),
       heur_k30 = case_when(
-        iq_occ > 10 ~ 0.21,
-        iq_occ <= 10 & pq_occ > 10.5 ~ 0.17,
-        iq_occ <= 10 & pq_occ <= 10.5 ~ 0.33,
+        iq_occ > 10 ~ 0.17,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.15,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.36,
         TRUE ~ 0.22
       ),
       heur_k60 = case_when(
-        iq_occ > 10 ~ 0.13,
-        iq_occ <= 10 & pq_occ > 10.5 ~ 0.13,
-        iq_occ <= 10 & pq_occ <= 10.5 ~ 0.29,
+        iq_occ > 10 ~ 0.14,
+        iq_occ <= 10 & pq_occ > 11 ~ 0.09,
+        iq_occ <= 10 & pq_occ <= 11 ~ 0.33,
         TRUE ~ 0.22
       )
     ) %>%

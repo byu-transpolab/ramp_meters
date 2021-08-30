@@ -10,6 +10,7 @@ read_raw_data <- function(files, names){
   )
   
   lapply(files, function(f){
+    # TODO: TANNER! make sure that start_time column is rounded to the nearest minute.
     read_excel(f)
   }) %>%
     bind_rows(.id = "ramp") %>%

@@ -10,6 +10,7 @@ read_raw_data <- function(files, names){
   )
   
   lapply(files, function(f){
+    # TODO: TANNER! make sure that start_time column is rounded to the nearest minute.
     read_excel(f)
   }) %>%
     bind_rows(.id = "ramp") %>%
@@ -71,8 +72,10 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
         lead(end_time, n = abs(correct_lag)) } 
       # figure out what the joining is actually doing when shifting the data (does it move the data up or down)
     ) %>% 
+    mutate(start_time = start_new) %>%
+    mutate(end_time = end_new) %>%
     # combine the detector and manual count spreadsheets together
-    left_join(raw_detector_data, by = c("ramp", "start_new" = "start_time", "end_new" = "end_time"))
+    left_join(raw_detector_data %>% select(-ramp, -end_time), by = c("start_time"))
 }
 
 #' Configure ramp properties

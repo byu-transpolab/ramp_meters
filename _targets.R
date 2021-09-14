@@ -14,7 +14,7 @@ source("R/analysis_functions.R")
 source("R/plot_functions.R")
 
 # Set target-specific options such as packages.
-tar_option_set(packages = c("tidyverse", "readxl", "lubridate", "modelsummary", "kableExtra"))
+tar_option_set(packages = c("tidyverse", "readxl", "lubridate", "zoo", "modelsummary", "kableExtra"))
 
 # debugging:  uncomment tar_option_set with the name of the target to debug
 # Then run tar_make with callr_function = NULL
@@ -76,7 +76,12 @@ list(
   tar_target(pdata, predicted_queues(linearmodels, model_data)),
   tar_target(pdata_plot, plot_predicted_queues(pdata)),
   
-  tar_target(rmse_table, rmse_data(pdata))
+  tar_target(rmse_table, rmse_data(pdata)),
   
-)
 
+
+  # Wait time estimates
+  tar_target(waittime, wait_times(pdata)),
+  tar_target(rmse_waittime, rmse_waittime_data(pdata))
+  #tar_target(waittime_plot, wait_times_plot(pdata))
+  )

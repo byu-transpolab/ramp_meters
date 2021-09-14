@@ -15,7 +15,7 @@ read_raw_data <- function(files, names){
   }) %>%
     bind_rows(.id = "ramp") %>%
     left_join(file_names, by = "ramp") %>%
-    mutate(ramp = name) %>% select(-name) %>%
+    mutate(ramp = name, start_time = round_date(start_time, unit="1 minute"), end_time = round_date(end_time, unit = "1 minute")) %>% select(-name) %>%
     split(.$ramp)
 }
 

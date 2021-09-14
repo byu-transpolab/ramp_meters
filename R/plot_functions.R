@@ -57,7 +57,7 @@ predicted_queues <- function(linearmodels, model_data){
         TRUE ~ 0.22
       )
     ) %>%
-    select(ramp, day, month, data, optim_k, queue_at_k, model_k, heur_k15, heur_k30, heur_k60) %>%
+    select(ramp, day, month, data, optim_k, queue_at_k, model_k, heur_k15, heur_k30, heur_k60, meter_rate_vpm) %>%
     mutate(
       timestamp = map(data, function(x) x$start_time),
       queue_model = map2(model_k, data, kalman_queue),
@@ -73,7 +73,8 @@ predicted_queues <- function(linearmodels, model_data){
     unnest(cols = c(timestamp, contains("queue"))) %>%
     pivot_longer(cols = contains("queue"), names_to = "Series", values_to = "Queue") %>%
     mutate(
-      observed = ifelse(grepl("observed", Series), "observed", "modeled")
+      observed = ifelse(grepl("observed", Series), "observed", "modeled"),
+      wait_time = Queue/meter_rate_vpm
     )
 }
 
@@ -85,8 +86,8 @@ predicted_queues <- function(linearmodels, model_data){
 plot_predicted_queues <- function(pdata){
   
   ggplot(pdata %>% filter(day %in% c(29) & month %in% c(7)), 
-         aes(x = timestamp, y = Queue, color = Series)) + 
-    geom_line(aes(size = Series)) +
+         aes(x = timestamp, color = Series)) + 
+    geom_line(aes(size = Series, y = rollmean(Queue, 3, na.pad = TRUE))) +
     scale_color_manual(values = c("black","purple","blue","orange","cyan","green","red","gray")) + 
     scale_size_manual(values = c(0.1,0.1,0.1,0.1,0.1,0.1,1.0,0.1)) +
     scale_linetype_manual("Queue Determination", values = c(5, 1)) +
@@ -130,8 +131,42 @@ plot_clusters <- function(cluster_data){
 
 rmse_data <- function(pdata){
   new <- pdata %>%
-    select(-observed) %>%
+    select(-observed, -wait_time) %>%
     pivot_wider(names_from = Series, values_from = Queue) %>%
+    select(ramp, day, timestamp, contains("queue")) %>%
+    mutate(
+      across(contains("queue"), ~ rollmean(.x, 3, na.pad = TRUE))
+    )
+  l <- list()
+  l[["Conservation"]] <- rmse(new$queue_conservation, new$queue_observed)
+  l[["Heuristic_15"]] <- rmse(new$queue_heuristic15, new$queue_observed)
+  l[["Heuristic_30"]] <- rmse(new$queue_heuristic30, new$queue_observed)
+  l[["Heuristic_60"]] <- rmse(new$queue_heuristic60, new$queue_observed)
+  l[["0.22"]] <- rmse(new$queue_022, new$queue_observed)
+  l[["Linear Model"]] <- rmse(new$queue_model, new$queue_observed)
+  l[["Optim_K"]] <- rmse(new$queue_optim_k, new$queue_observed)
+  
+  l %>%
+    bind_rows(.id = "Models") %>%
+    pivot_longer(cols = everything(), names_to = "Models", values_to = "RMSE") %>%
+    arrange(RMSE)
+}
+
+wait_times <- function(pdata){
+
+  ggplot(pdata %>% filter(day %in% c(29) & month %in% c(7)), 
+         aes(x = timestamp, y = wait_time, color = Series)) + 
+    geom_line(aes(size = Series)) +
+    scale_color_manual(values = c("black","purple","blue","orange","cyan","green","red","gray")) + 
+    scale_size_manual(values = c(0.1,0.1,0.1,0.1,0.1,0.1,1.0,0.1)) +
+    scale_linetype_manual("Queue Determination", values = c(5, 1)) +
+    facet_grid(ramp ~ day, scales = "free") + theme_bw()
+}
+
+rmse_waittime_data <- function(pdata){
+  new <- pdata %>%
+    select(-observed) %>%
+    pivot_wider(names_from = Series, values_from = wait_time) %>%
     select(ramp, day, timestamp, contains("queue"))
   l <- list()
   l[["Conservation"]] <- rmse(new$queue_conservation, new$queue_observed)

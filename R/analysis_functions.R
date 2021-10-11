@@ -115,16 +115,16 @@ linear_models <- function(model_data){
     #"Flow" = lm(optim_k ~ iq_occ + log(density + 1) + flow, data = model_data),
     #"Bangerter" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Bangerter")),
     #"Layton" = lm(optim_k ~ iq_occ + flow + log(density + 1), data = model_data %>% filter(ramp == "Layton")),
-    "Ramp Control" = lm(optim_k ~ iq_occ  + log(density + 1) + ramp, data = model_data),
+    "Ramp Control [Density]" = lm(optim_k ~ iq_occ  + log(density + 1) + ramp, data = model_data),
     #"Mean" = lm(optim_k ~ iq_occ  + log(density + 1) , data = model_data),
     #"85th %" = lm(optim_k ~ iq_occ  + log(density_85 + 1) , data = model_data),
     #"Median" = lm(optim_k ~ iq_occ  + log(med_density + 1) , data = model_data),
     #"SD" = lm(optim_k ~ iq_occ  + log(sd_density + 1) , data = model_data),
     #"Minimum" = lm(optim_k ~ iq_occ  + log(min_density + 1) , data = model_data),
     #"Maximum" = lm(optim_k ~ iq_occ  + log(max_density + 1) , data = model_data),
-    "New Ramp Control" = lm(optim_k ~ iq_occ  + eq_occ + pq_occ + ramp, data = model_data),
-    "Log Occ" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01) + ramp, data = model_data),
-    "Log Occ no ramp" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01), data = model_data)
+    "Ramp Control [Occ]" = lm(optim_k ~ iq_occ  + eq_occ + pq_occ + ramp, data = model_data),
+    "Ramp Control [Log Occ]" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01) + ramp, data = model_data),
+    "Log Occ" = lm(optim_k ~ log(iq_occ + .01) + log(eq_occ + .01) + log(pq_occ + .01), data = model_data)
   )
 }
 
@@ -134,7 +134,7 @@ model_summary <- function(linear_models){
   modelsummary(
     linear_models, 
     estimate = "{estimate} ({statistic}){stars}",
-    statistic = NULL, title = "Optim_K Regression Estimates",
+    statistic = NULL, title = "Optim_K Linear Regression Estimates",
     notes = c("t-statistics in parentheses, * p < 0.1, ** p < 0.05, *** p < 0.01"),
     escape = FALSE
     

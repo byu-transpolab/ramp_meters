@@ -25,22 +25,30 @@ tar_option_set(packages = c("tidyverse", "readxl", "lubridate", "zoo",
 # End this file with a list of target objects.
 list(
   # data cleaning and grouping pipeline
-  tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx", "data/bangerter_detector.xlsx", "data/university_detector.xlsx"),
-                                              c("Layton", "Bangerter", "University"))),
-  tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx", "data/bangerter_manual.xlsx", "data/university_manual.xlsx"),
-                                            c("Layton", "Bangerter", "University"))),
+  tar_target(raw_detector_data, read_raw_data(c("data/layton_detector.xlsx", 
+                                                "data/bangerter_detector.xlsx", 
+                                                "data/university_detector.xlsx", 
+                                                "data/pgblvd_detector.xlsx"),
+                                              c("Layton", "Bangerter", "University", "PG_Blvd"))),
+  tar_target(raw_manual_data, read_raw_data(c("data/layton_manual.xlsx", 
+                                              "data/bangerter_manual.xlsx", 
+                                              "data/university_manual.xlsx",
+                                              "data/pgblvd_manual.xlsx"),
+                                            c("Layton", "Bangerter", "University", "PG_Blvd"))),
  
   tar_target(adjusted_bgt_data,  adjust_timebins(raw_detector_data$Bangerter, raw_manual_data$Bangerter)),
   tar_target(adjusted_lyt_data,  adjust_timebins(raw_detector_data$Layton, raw_manual_data$Layton)),
   tar_target(adjusted_univ_data, adjust_timebins(raw_detector_data$University, raw_manual_data$University)),
+  tar_target(adjusted_pg_data, adjust_timebins(raw_detector_data$PG_Blvd, raw_manual_data$PG_Blvd)),
   
   tar_target(df_bgt,  clean_data(adjusted_bgt_data)),
   tar_target(df_lyt,  clean_data(adjusted_lyt_data)),
   tar_target(df_univ, clean_data(adjusted_univ_data)),
+  tar_target(df_pg, clean_data(adjusted_pg_data)),
   
-  tar_target(nested_data,   nest_data(list(df_bgt, df_lyt, df_univ))),
-  tar_target(nested_data30, nest_data(list(df_bgt, df_lyt, df_univ), bin_length = 30)),
-  tar_target(nested_data60, nest_data(list(df_bgt, df_lyt, df_univ), bin_length = 60)),
+  tar_target(nested_data,   nest_data(list(df_bgt, df_lyt, df_univ, df_pg))),
+  tar_target(nested_data30, nest_data(list(df_bgt, df_lyt, df_univ, df_pg), bin_length = 30)),
+  tar_target(nested_data60, nest_data(list(df_bgt, df_lyt, df_univ, df_pg), bin_length = 60)),
   
   tar_target(correlation_data,   get_correlation_data(nested_data)),
   tar_target(correlation_data30, get_correlation_data(nested_data30)),
@@ -85,6 +93,7 @@ list(
   tar_target(rmse_bgt,   rmse_data(pdata, "Bangerter")),
   tar_target(rmse_lyt,   rmse_data(pdata, "Layton")),
   tar_target(rmse_univ,  rmse_data(pdata, "University")),
+  tar_target(rmse_pg,  rmse_data(pdata, "PG_Blvd")),
   tar_target(rmse_table, rmse_data(pdata)),
   
   # Wait time estimates and RMSE
@@ -93,6 +102,7 @@ list(
   tar_target(rmse_wt_bgt,      rmse_waittime_data(pdata, "Bangerter")),
   tar_target(rmse_wt_lyt,      rmse_waittime_data(pdata, "Layton")),
   tar_target(rmse_wt_univ,     rmse_waittime_data(pdata, "University")),
+  tar_target(rmse_wt_pg,     rmse_waittime_data(pdata, "PG_Blvd")),
   tar_target(rmse_wt,          rmse_waittime_data(pdata))
   )
 

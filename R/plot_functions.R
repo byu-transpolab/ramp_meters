@@ -44,7 +44,7 @@ estimate_cluster_k <- function(cluster_data){
     group_by(cluster) %>%
     summarise(
       mean_k = mean(optim_k), n = n(), sd = sd(optim_k),
-      max_pq_occ = max(pq_occ), min_pq_occ = min(pq_occ)
+      min_pq_occ = min(pq_occ), max_pq_occ = max(pq_occ)
     ) %>%
     arrange(mean_k)
 }
@@ -69,12 +69,12 @@ predicted_queues <- function(linearmodels, model_data){
   model_data %>%
     ungroup() %>%
     mutate(
-      model_k = predict(linearmodels[['Ramp Control']]), # change which model?
+      model_k = predict(linearmodels[['Ramp Control [Log Occ]']]), # change which model?
       # heuristics
       heur_k15 = case_when(
-        iq_occ > 10 ~ 0.327,
-        iq_occ <= 10 & pq_occ > 11 ~ 0.159,
-        iq_occ <= 10 & pq_occ <= 11 ~ 0.163,
+        iq_occ > 15 ~ 0.327,
+        iq_occ <= 15 & pq_occ > 12 ~ 0.159,
+        iq_occ <= 15 & pq_occ <= 12 ~ 0.163,
         TRUE ~ 0.22
       ),
       heur_k30 = case_when(
@@ -90,7 +90,7 @@ predicted_queues <- function(linearmodels, model_data){
         TRUE ~ 0.22
       )
     ) %>%
-    select(ramp, day, month, hour, data, optim_k, queue_at_k, model_k, 
+    select(ramp, month, day, hour, dow, data, optim_k, queue_at_k, model_k, 
            heur_k15, heur_k30, heur_k60, meter_rate_vpm) %>%
     mutate(
       timestamp = map(data, function(x) x$start_time),
@@ -177,7 +177,10 @@ rmse_waittime_data <- function(pdata, rampname = NULL){
 #' 
 #' @return A ggplot object.
 plot_predicted_queues <- function(pdata){
-  d <- pdata %>% filter(day %in% c(29) & month %in% c(7) & hour %in% c(17) & 
+  d <- pdata %>% filter(month %in% c(7) &
+                        #day %in% c(29) & 
+                        #hour %in% c(17) & 
+                        #ramp %in% c("Bangerter") &  
                         !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%
@@ -188,13 +191,16 @@ plot_predicted_queues <- function(pdata){
     scale_color_brewer(palette = "Dark2") +
     scale_size_manual(values = c(0.5,1.5)) +
     scale_linetype_manual("Queue Determination", values = c(5, 1)) +
-    facet_grid(ramp ~ day, scales = "free") + theme_bw()
+    facet_grid(ramp ~ month + day, scales = "free") + theme_bw()
   
 }
 
 # Wait Times Plot
 wait_times <- function(pdata){
-  d <- pdata %>% filter(day %in% c(29) & month %in% c(7) & hour %in% c(17) & 
+  d <- pdata %>% filter(month %in% c(4) & 
+                        #day %in% c(29) & 
+                        #hour %in% c(17) & 
+                        #ramp %in% c("Bangerter") &
                         !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%
@@ -202,10 +208,10 @@ wait_times <- function(pdata){
   ggplot(ungroup(d), 
          aes(x = timestamp, color = Series, size = observed)) + 
     geom_line(aes(y = rollwait)) +
-    scale_color_brewer(palette = "RdYlBu") +
+    scale_color_brewer(palette = "Dark2") +
     scale_size_manual(values = c(0.5,1.5)) +
     scale_linetype_manual("Queue Determination", values = c(5, 1)) +
-    facet_grid(ramp ~ day, scales = "free") + theme_bw()
+    facet_grid(ramp ~ month + day, scales = "free") + theme_bw()
 }
 
 #' Heuristics Plot

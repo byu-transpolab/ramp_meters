@@ -10,7 +10,6 @@ read_raw_data <- function(files, names){
   )
   
   lapply(files, function(f){
-    # TODO: TANNER! make sure that start_time column is rounded to the nearest minute.
     read_excel(f)
   }) %>%
     bind_rows(.id = "ramp") %>%
@@ -67,12 +66,10 @@ adjust_timebins <- function(raw_detector_data, raw_manual_data){
         lag(start_time, n = correct_lag) 
       } else {
         lead(start_time, n = abs(correct_lag)) },
-      # figure out what to do if correct_lag is negative, if statement of if correct_lag is positive or negative
       end_new = if(correct_lag > 0) {
         lag(end_time, n = correct_lag) 
       } else {
         lead(end_time, n = abs(correct_lag)) } 
-      # figure out what the joining is actually doing when shifting the data (does it move the data up or down)
     ) %>% 
     mutate(start_time = start_new) %>%
     mutate(end_time = end_new) %>%
@@ -126,11 +123,12 @@ nest_data <- function(clean_data, bin_length = 15){
     mutate(
       day = lubridate::day(`start_time`),
       month = lubridate::month(`start_time`),
+      dow = lubridate::wday(`start_time`),
       hour = lubridate::hour(`start_time`),
       minute = lubridate::minute(`start_time`),
       period = minute %/% bin_length
     ) %>%
-    group_by(ramp, month, day, hour, period) %>%
+    group_by(ramp, month, day, hour, dow, period) %>%
     filter(n()>=5) %>%
     nest() 
 }

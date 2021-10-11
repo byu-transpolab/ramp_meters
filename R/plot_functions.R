@@ -112,12 +112,13 @@ predicted_queues <- function(linearmodels, model_data){
     )
 }
 
+first_value <- function(x){ x[1]}
 
 # RMSE of Models Table
 rmse_data <- function(pdata, rampname = NULL){
   new <- pdata %>%
     select(-observed, -wait_time) %>%
-    pivot_wider(names_from = Series, values_from = Queue) %>%
+    pivot_wider(names_from = Series, values_from = Queue, values_fn = first_value) %>%
     select(ramp, day, timestamp, contains("queue")) %>%
     mutate(
       across(contains("queue"), ~ rollmean(.x, 3, na.pad = TRUE))

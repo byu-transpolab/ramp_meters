@@ -148,7 +148,7 @@ rmse_waittime_data <- function(pdata, rampname = NULL){
   new2 <- pdata %>%
     select(-observed, -contains("queue")) %>%
     mutate(Series = gsub("queue","waittime", Series)) %>%
-    pivot_wider(names_from = Series, values_from = wait_time) %>%
+    pivot_wider(names_from = Series, values_from = wait_time, values_fn = first_value) %>%
     select(ramp, day, timestamp, contains("waittime")) %>%
     mutate(
       across(contains("waittime"), ~ rollmean(.x, 3, na.pad = TRUE))

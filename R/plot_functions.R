@@ -72,9 +72,9 @@ predicted_queues <- function(linearmodels, model_data){
       model_k = predict(linearmodels[['Ramp Control [Log Occ]']]), # change which model?
       # heuristics
       heur_k15 = case_when(
-        iq_occ > 15 ~ 0.327,
-        iq_occ <= 15 & pq_occ > 12 ~ 0.159,
-        iq_occ <= 15 & pq_occ <= 12 ~ 0.163,
+        iq_occ > 16 ~ 0.170,
+        iq_occ <= 16 & pq_occ > 13.5 ~ 0.337,
+        iq_occ <= 16 & pq_occ <= 13.5 ~ 0.189,
         TRUE ~ 0.22
       ),
       heur_k30 = case_when(
@@ -179,9 +179,9 @@ rmse_waittime_data <- function(pdata, rampname = NULL){
 #' @return A ggplot object.
 plot_predicted_queues <- function(pdata){
   d <- pdata %>% filter(month %in% c(7) &
-                        #day %in% c(29) & 
+                        day %in% c(28) & 
                         #hour %in% c(17) & 
-                        #ramp %in% c("Bangerter") &  
+                        ramp %in% c("University") &  
                         !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%
@@ -199,9 +199,9 @@ plot_predicted_queues <- function(pdata){
 # Wait Times Plot
 wait_times <- function(pdata){
   d <- pdata %>% filter(month %in% c(4) & 
-                        #day %in% c(29) & 
+                        day %in% c(15) & 
                         #hour %in% c(17) & 
-                        #ramp %in% c("Bangerter") &
+                        ramp %in% c("Bangerter") &
                         !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%

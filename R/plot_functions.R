@@ -53,7 +53,15 @@ estimate_cluster_k <- function(cluster_data){
 plot_clusters <- function(cluster_data){
   ggplot(cluster_data, 
          aes(x=iq_occ, y = pq_occ, col = factor(cluster), shape = factor(ramp))) + 
-    geom_point()
+    geom_point(size = 3) +
+    labs(x = "IQ Occupancy (%)", y = "PQ Occupancy (%)") + 
+    theme_bw() +
+    theme(legend.title = element_text(size = 15),
+          legend.text = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 15)) +
+  scale_color_brewer(palette = "Dark2", name = "Cluster") + 
+  scale_shape_discrete(name = "Ramp")
 }
 
 
@@ -69,7 +77,7 @@ predicted_queues <- function(linearmodels, model_data){
   model_data %>%
     ungroup() %>%
     mutate(
-      model_k = predict(linearmodels[['Ramp Control [Log Occ]']]), # change which model?
+      model_k = predict(linearmodels[['Ramp Control [Density]']]), # change which model?
       # heuristics
       heur_k15 = case_when(
         iq_occ > 16 ~ 0.170,
@@ -138,7 +146,7 @@ rmse_data <- function(pdata, rampname = NULL){
   l %>%
     bind_rows(.id = "Models") %>%
     pivot_longer(cols = everything(), names_to = "Models", values_to = "RMSE") %>%
-    
+
     arrange(RMSE)
 }
 
@@ -178,30 +186,42 @@ rmse_waittime_data <- function(pdata, rampname = NULL){
 #' 
 #' @return A ggplot object.
 plot_predicted_queues <- function(pdata){
-  d <- pdata %>% filter(month %in% c(7) &
-                        day %in% c(28) & 
-                        #hour %in% c(17) & 
+  d <- pdata %>% filter(month %in% c(8) &
+                        day %in% c(6) & 
+                        #hour %in% c(16) & 
                         ramp %in% c("University") &  
-                        !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
+                        !Series %in% c("queue_heuristic30","queue_heuristic60" #,
+                                       #"queue_optim_k", "queue_heuristic15", "queue_model", 
+                                       #"queue_conservation"
+                                       )) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%
     mutate(rollqueue = rollmean(Queue, 3, na.pad = TRUE))
+  
   ggplot(ungroup(d),
          aes(x = timestamp, color = Series, size = observed)) + 
     geom_line(aes(y = rollqueue)) +
-    scale_color_brewer(palette = "Dark2") +
-    scale_size_manual(values = c(0.5,1.5)) +
-    scale_linetype_manual("Queue Determination", values = c(5, 1)) +
-    facet_grid(ramp ~ month + day, scales = "free") + theme_bw()
-  
-}
+    scale_color_brewer(palette = "Dark2", name = "Model",
+                       breaks = c("queue_observed","queue_optim_k","queue_022","queue_heuristic15","queue_model","queue_conservation"),
+                       labels = c("Observed","Optimized K","Vigos","Heuristic","Linear Model","Conservation")) +
+    scale_size_manual(values = c(0.5,1.5), name = "Type",
+                      labels = c("Modeled", "Observed")) + 
+    labs(x = "Time of Day", y = "Queue Length (veh)") +    
+    theme_bw() +
+    theme(legend.title = element_text(size = 15),
+          legend.text = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 15)) + 
+    guides(color = guide_legend(override.aes = list(size=2)))
+    #facet_grid(ramp ~ month + day, scales = "free")   
+  }
 
 # Wait Times Plot
 wait_times <- function(pdata){
-  d <- pdata %>% filter(month %in% c(4) & 
-                        day %in% c(15) & 
+  d <- pdata %>% filter(month %in% c(8) & 
+                        day %in% c(6) & 
                         #hour %in% c(17) & 
-                        ramp %in% c("Bangerter") &
+                        ramp %in% c("University") &
                         !Series %in% c("queue_heuristic30","queue_heuristic60")) %>%
     group_by(Series) %>%
     arrange(timestamp, .by_group = TRUE) %>%
@@ -209,10 +229,19 @@ wait_times <- function(pdata){
   ggplot(ungroup(d), 
          aes(x = timestamp, color = Series, size = observed)) + 
     geom_line(aes(y = rollwait)) +
-    scale_color_brewer(palette = "Dark2") +
-    scale_size_manual(values = c(0.5,1.5)) +
-    scale_linetype_manual("Queue Determination", values = c(5, 1)) +
-    facet_grid(ramp ~ month + day, scales = "free") + theme_bw()
+    scale_color_brewer(palette = "Dark2", name = "Model",
+                       breaks = c("queue_observed","queue_optim_k","queue_022","queue_heuristic15","queue_model","queue_conservation"),
+                       labels = c("Observed","Optimized K","Vigos","Heuristic","Linear Model","Conservation")) +
+    scale_size_manual(values = c(0.5,1.5), name = "Type",
+                      labels = c("Modeled", "Observed")) + 
+    labs(x = "Time of Day", y = "Wait Time (min)") + 
+    theme_bw() +
+    theme(legend.title = element_text(size = 15),
+          legend.text = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 15)) + 
+    guides(color = guide_legend(override.aes = list(size=2)))
+    #facet_grid(ramp ~ month + day, scales = "free")
 }
 
 #' Heuristics Plot
@@ -230,5 +259,96 @@ plot_heuristic_queues <- function(pdata){
     scale_size_manual(values = c(0.5,1.5)) +
     scale_linetype_manual("Queue Determination", values = c(5, 1)) +
     facet_grid(ramp ~ day, scales = "free") + theme_bw()
+  
+}
+
+# Layton Wait Times Comparison
+wt_comparison <- function(pdata){
+  lyt_wt <- read_excel('data/lyt_man_wt.xlsx') %>%
+    mutate(rollwait = wt/60,
+           observed = "actual",
+           Series = "manual")
+  d <- pdata %>% filter(month %in% c(4) & 
+                          day %in% c(15) & 
+                          ramp %in% c("Layton") &
+                          !Series %in% c("queue_heuristic30", "queue_heuristic60",
+                                         "queue_022", "queue_conservation",
+                                         "queue_heuristic15", "queue_model", 
+                                         "queue_optim_k")) %>%
+    group_by(Series) %>%
+    arrange(timestamp, .by_group = TRUE) %>%
+    mutate(rollwait = rollmean(wait_time, 3, na.pad = TRUE)) %>%
+    select(timestamp, observed, rollwait, Series)
+    combined <- rbind(d,lyt_wt[c("timestamp", "observed", "rollwait", "Series")])
+    
+  # Line
+  ggplot(ungroup(combined), 
+         aes(x = timestamp, color = Series)) + 
+    geom_line(aes(y = rollwait, size = observed)) +
+    scale_color_brewer(palette = "Dark2", name = "Wait Time",
+                       breaks = c("manual", "queue_observed"),
+                       labels = c("Actual", "Calculated")) +
+    scale_size_manual(values = c(1.5,0.5),
+                      name = "Type",
+                      labels = c("Observed", "Calculated")) +
+    guides(size = FALSE) +
+    labs(x = "Time of Day", y = "Wait Time (min)") + theme_bw() + 
+    theme(legend.text = element_text(size = 15),
+          legend.title = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 15)) + 
+    guides(color = guide_legend(override.aes = list(size=2)))
+  
+  # Boxplot
+  ggplot(ungroup(combined),
+         aes(x = Series, y = rollwait)) + 
+           geom_boxplot()
+  
+  # Scatterplot
+  combined2 <- cbind(d, lyt_wt[c("timestamp", "observed", "rollwait", "Series")])
+
+  formula1 <- y ~ x
+  ggplot(combined2,
+    aes(x = rollwait...3, y = rollwait...7)) +
+    geom_jitter() +
+    geom_smooth(method = "lm", se = FALSE) +
+    stat_poly_eq(formula=formula1,aes(label=paste(..eq.label..,..rr.label..,sep="~~~")),parse=TRUE) +
+    xlab("Calculated Wait Time (min)") + ylab("Actual Wait Time (min)")
+  # RMSE       
+  rmse(combined2$rollwait...3, combined2$rollwait...7)
+}
+
+# Test Diff in Queue Length Plot
+queue_diff <- function(pdata){
+  d <- pdata %>% filter(month %in% c(7) &
+                          day %in% c(28) & 
+                          #hour %in% c(17) & 
+                          ramp %in% c("University") &  
+                          !Series %in% c("queue_heuristic30","queue_heuristic60" ,
+                                         "queue_optim_k", "queue_heuristic15", "queue_model", 
+                                         "queue_conservation"
+                          )) %>%
+    group_by(Series) %>%
+    arrange(timestamp, .by_group = TRUE) %>%
+    select(timestamp, Series, Queue, observed) %>%
+    mutate(rollqueue = rollmean(Queue, 3, na.pad = TRUE),
+           queue_diff = 1) # HELP
+  
+  ggplot(ungroup(d),
+         aes(x = timestamp, color = Series, size = observed)) + 
+    geom_line(aes(y = rollqueue)) +
+    scale_color_brewer(palette = "Dark2", name = "Model",
+                       breaks = c("queue_observed","queue_optim_k","queue_022","queue_heuristic15","queue_model","queue_conservation"),
+                       labels = c("Observed","Optimized K","Vigos","Heuristic","Linear Model","Conservation")) +
+    scale_size_manual(values = c(0.5,1.5), name = "Type",
+                      labels = c("Modeled", "Observed")) + 
+    labs(x = "Time of Day", y = "Queue Length (veh)") +    
+    theme_bw() +
+    theme(legend.title = element_text(size = 15),
+          legend.text = element_text(size = 15),
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 15)) + 
+    guides(color = guide_legend(override.aes = list(size=2)))
+  #facet_grid(ramp ~ month + day, scales = "free")   
   
 }

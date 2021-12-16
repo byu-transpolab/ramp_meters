@@ -93,7 +93,7 @@ list(
   tar_target(rmse_bgt,   rmse_data(pdata, "Bangerter")),
   tar_target(rmse_lyt,   rmse_data(pdata, "Layton")),
   tar_target(rmse_univ,  rmse_data(pdata, "University")),
-  tar_target(rmse_pg,  rmse_data(pdata, "PG_Blvd")),
+  tar_target(rmse_pg,    rmse_data(pdata, "PG_Blvd")),
   tar_target(rmse_table, rmse_data(pdata)),
   
   # Wait time estimates and RMSE
@@ -102,7 +102,7 @@ list(
   tar_target(rmse_wt_bgt,      rmse_waittime_data(pdata, "Bangerter")),
   tar_target(rmse_wt_lyt,      rmse_waittime_data(pdata, "Layton")),
   tar_target(rmse_wt_univ,     rmse_waittime_data(pdata, "University")),
-  tar_target(rmse_wt_pg,     rmse_waittime_data(pdata, "PG_Blvd")),
+  tar_target(rmse_wt_pg,       rmse_waittime_data(pdata, "PG_Blvd")),
   tar_target(rmse_wt,          rmse_waittime_data(pdata))
   )
 
